@@ -1,77 +1,83 @@
+<p align="center"><img src="docs/icono.png" width="120" alt="Icono de MedicoMem"></p>
+
 # MedicoMem — Grabar médico
 
-App Android de **un solo botón** para que personas mayores graben sus consultas médicas.
-Al parar, el audio llega solo a un **bot privado de Telegram**. Sin servidor, sin cuentas, coste 0 €.
+App Android de **un solo botón** para que las personas mayores graben sus consultas médicas.
+Al parar, el audio llega solo al **Telegram de la familia**. Sin servidor, sin cuentas y gratis.
 
-- Un botón gigante (también como **widget**, de 1×1 a pantalla completa): toque para grabar (pantalla **roja**, vibración y pitido), toque para parar (**✓ GUARDADO** en verde).
-- Graba con la pantalla apagada o el móvil en el bolso (servicio en primer plano + *wake lock*).
-- Envío por datos móviles o Wi‑Fi en cuanto haya señal; si no hay cobertura se reintenta solo, incluso tras reiniciar el móvil.
-- Android 7.0 o superior, APK de ~2 MB, pensado para móviles modestos.
+## ✨ Qué hace
 
-## Cómo funciona
-
-| Parte | Detalle |
-| :--- | :--- |
-| Audio | `AudioRecord` → tratamiento de voz propio → `MediaCodec` + `MediaMuxer`. En Android 10+: **Opus en OGG** a 48 kbps (~21 MB por hora), el formato de las notas de voz de Telegram, que dibuja la onda y permite transcribir con «→A». En Android 7–9: AAC en M4A a 64 kbps. Si el móvil no admite nada de eso, vuelve al `MediaRecorder` sencillo. |
-| Tratamiento de voz | Filtro de graves (~90 Hz: golpes, aire acondicionado, zumbido), volumen automático que solo sube cuando detecta voz por encima del ruido medido (máx. +18 dB) y limitador suave. Con una voz lejana simulada: +16 dB de voz y +6 dB de diferencia voz/ruido. Se puede desactivar en el menú familiar. |
-| Micrófono | Por defecto «sin procesar» (`VOICE_RECOGNITION`, sin el volumen automático del fabricante, para no hacerlo dos veces). Opciones: estándar (`MIC`) y modo vídeo (`CAMCORDER`), que en algunos móviles capta mejor de lejos. |
-| Orientación | Al grabar, la pantalla se pone del revés con «▲ HACIA EL MÉDICO ▲» en el borde del micrófono: al girar el móvil para leerla, el micrófono queda apuntando al médico. Medidor de nivel para ver que capta. |
-| Consultas largas | Cada archivo se corta a 42 MB (~1 h 30 min) y la grabación sigue en «Parte 2», por debajo del límite de 50 MB de los bots. |
-| Llamadas | Si entra una llamada (u otra app toma el audio), la parte grabada se cierra y se envía; al terminar, se reanuda en una parte nueva. |
-| Toques por error | Una grabación de una sola parte que dura menos de 10 s se descarta y no se envía; la pantalla muestra «Muy corta. No se ha enviado.» en gris. Las partes cortas de una consulta larga (tras una llamada) sí se envían. |
-| Cortes automáticos | A las 3 h, o con la batería al 5 % sin cargar. El mensaje lo indica. |
-| Envío | `WorkManager` + `OkHttp` en *streaming* desde disco. Llega como **nota de voz** (`sendVoice`): con Telegram Premium se transcribe con el botón «→A» y se oye a 1,5×/2×. Si Telegram rechaza la nota de voz, se envía como archivo de audio (`sendAudio`). Reintento con espera creciente (30 s, 1 min, 2 min…). |
-| Espacio | Todo en el almacenamiento privado de la app; lo enviado se borra a los 15 días. |
-| Si el móvil se apaga grabando | Al volver a abrirse, el trozo grabado se envía igualmente con un aviso de que puede estar dañado. |
+- 🎙️ **Un botón gigante**: un toque para grabar (pantalla **roja**, vibración y pitido) y otro para parar (**✓ GUARDADO** en verde).
+- 🧩 **Widget** en el escritorio, de 1×1 a pantalla completa: verde para grabar, rojo para parar.
+- 🔄 **Ayuda a colocar el móvil**: al grabar, la pantalla se pone del revés con «▲ HACIA EL MÉDICO ▲», así el micrófono queda apuntando al médico.
+- 🔊 **Mejora las voces**: sube la voz de quien habla lejos, quita golpes y zumbidos y no deja que sature la voz cercana.
+- 📨 **Envío automático a Telegram** (a ti o a un grupo familiar) en cuanto hay señal, por datos o Wi‑Fi. Si no hay cobertura, lo reintenta solo, incluso tras reiniciar el móvil.
+- 🎤 **Llega como nota de voz**: se oye a 1,5× o 2× y, con Telegram Premium, se transcribe con el botón **→A** (Android 10 o superior).
+- 📞 **No pierde nada**: si entra una llamada, guarda y envía lo grabado y sigue en una parte nueva al colgar. Las consultas muy largas se parten solas.
+- 🛟 **Cortes de seguridad**: para sola a las 3 horas o con la batería al 5 %, y lo avisa en el mensaje.
+- ⏱️ **Ignora toques por error**: las grabaciones de menos de 10 segundos no se envían.
+- 🔒 **Ajustes escondidos**: solo se abren manteniendo pulsado 4 segundos un texto discreto, para que nadie los cambie sin querer.
+- 🧹 **No llena el móvil**: lo enviado se borra solo a los 15 días.
 
 Mensaje que llega a Telegram:
 
 ```text
 🎙️ Cita médica — Mamá
 📅 20/11/2026 10:35 · ⏱️ 22 min · 🔋 68%
-⚠️ Batería baja — recordar cargar        (si < 20 %)
-⚠️ Corte automático (límite de 3 h)       (si se cortó solo)
+⚠️ Batería baja — recordar cargar        (si queda menos del 20 %)
+⚠️ Corte automático (límite de 3 h)       (si se paró sola)
 ```
 
-## Descargar
+## 📋 Requisitos
 
-Última versión: **[MedicoMem.apk](https://github.com/mosqueteroweb/MedicoMem/releases/latest/download/MedicoMem.apk)** · [todas las versiones](https://github.com/mosqueteroweb/MedicoMem/releases)
+| | |
+| :--- | :--- |
+| 📱 Móvil | Android 7.0 o superior. Para el botón →A de transcripción, Android 10 o superior. |
+| 💾 Espacio | Unos 21–28 MB por hora de grabación (se borra solo a los 15 días de enviarse). |
+| ✈️ Telegram | Una cuenta tuya y un bot propio (se crea gratis en 2 minutos). Telegram Premium solo si quieres transcripción. |
+| 📶 Conexión | Datos móviles o Wi‑Fi en algún momento después de la consulta. |
 
-## Puesta en marcha (una vez, en el móvil de tus padres)
+## ⬇️ Descargar
 
-1. **Crea el bot**: en Telegram habla con `@BotFather`, envía `/newbot` y copia el *token*.
-2. **Escribe cualquier mensaje a tu bot** (o añádelo a un grupo familiar y escribe allí).
-3. Descarga el APK desde el enlace de arriba en el móvil, instálalo (Android pedirá permitir instalar apps de esa fuente) y abre la app. Al primer toque pide **Micrófono** (y **Notificaciones** en Android 13+): acepta.
-4. **Mantén pulsado 4 segundos** el texto gris de arriba («Configuración familiar»):
-   - Nombre (`Mamá`, `Papá`…), *Bot Token* y pulsa **Buscar mi Chat ID**.
-   - Pulsa **Probar envío ahora** y comprueba que llega a tu Telegram.
-   - Pulsa **Desactivar ahorro de batería**.
-5. En el escritorio, mantén pulsado un hueco → *Widgets* → **Grabar médico**, y colócalo bien grande.
+Última versión: **[MedicoMem.apk](https://github.com/mosqueteroweb/MedicoMem/releases/latest/download/MedicoMem.apk)** · [todas las versiones](https://github.com/mosqueteroweb/MedicoMem/releases) · [novedades](CHANGELOG.md)
 
-### Ahorro de batería según la marca
+## ⚙️ Configuración (una sola vez)
+
+**En tu Telegram**
+
+1. 🤖 Habla con **@BotFather**, envía `/newbot`, ponle un nombre y copia el **token** que te da (algo como `85xxxxxxx:AAexxxxx`). Es como una contraseña: no lo compartas.
+2. 💬 Abre tu bot y pulsa **Iniciar**. Si quieres que los audios lleguen a varios, crea un **grupo familiar**, añade el bot y escribe **`/start`** en el grupo.
+
+**En el móvil de la persona mayor**
+
+3. ⬇️ Abre el enlace de descarga, instala el APK (Android pedirá permitir instalar apps de esa fuente) y abre la app.
+4. 🎙️ Toca el botón verde una vez y acepta **Micrófono** (y **Notificaciones** en Android 13 o superior). Vuelve a tocar para parar.
+5. 🔒 **Mantén pulsado 4 segundos** el texto gris de arriba («Configuración familiar»):
+   - ✍️ Escribe el **nombre** (`Mamá`, `Papá`…) y pega el **token** en «Bot Token».
+   - 🔎 Pulsa **Buscar chat o grupo** y elige a dónde se envían (👤 tú o 👥 el grupo).
+   - ✅ Pulsa **Probar envío ahora**: te llegará un mensaje con el modelo del móvil, su versión de Android y si habrá transcripción.
+   - 🔋 Pulsa **Desactivar ahorro de batería** (y mira la tabla de abajo según la marca).
+6. 🧩 En el escritorio, mantén pulsado un hueco → **Widgets** → **Grabar médico**, y ponlo bien grande en un sitio despejado.
+7. 🧪 Haz una prueba de más de 10 segundos y comprueba que llega.
+
+### 🔋 Ahorro de batería según la marca
 
 | Marca | Qué tocar además |
 | :--- | :--- |
-| Xiaomi / Redmi / POCO (MIUI, HyperOS) | Ajustes de la app → **Inicio automático** activado; **Ahorro de batería → Sin restricciones**. |
+| Xiaomi / Redmi / POCO | Ajustes de la app → **Inicio automático** activado; **Ahorro de batería → Sin restricciones**. |
 | Samsung | Ajustes → Batería → **Límites de uso en segundo plano**: quitar la app de «inactivas» y añadirla a «nunca en reposo». |
 | Huawei / Honor | Batería → **Inicio de aplicaciones**: gestionar manualmente y activar las tres opciones. |
 | Oppo / Realme / OnePlus | Ajustes de la app → Batería → **Permitir actividad en segundo plano** e inicio automático. |
 
-## Para que se oiga bien
+## 👂 Para que se oiga bien
 
-- Móvil **sobre la mesa**, pantalla arriba, con «▲ HACIA EL MÉDICO» apuntando al médico.
-- **Nunca en el bolsillo ni en el bolso**: la tela tapa las voces aunque la grabación siga.
-- Sin funda que tape el agujero del micrófono (borde inferior).
-- Mejor aún: un **micrófono de solapa con cable** (USB‑C o minijack) sobre la mesa. Los Bluetooth graban con calidad de llamada.
+- 📱 Móvil **sobre la mesa**, pantalla arriba, con «▲ HACIA EL MÉDICO» apuntando al médico.
+- 👜 **Nunca en el bolsillo ni en el bolso**: la tela tapa las voces aunque la grabación siga.
+- 📕 Si tiene funda de libro, **abierta y plana**; ninguna funda debe tapar el agujero del micrófono (borde de abajo).
+- 🎧 Mejor aún: un **micrófono de solapa con cable** (USB‑C o minijack) encima de la mesa. Los Bluetooth graban peor.
+- 🎛️ En el menú familiar se puede elegir el micrófono. Graba a 2 metros con cada opción y quédate con la que mejor se oiga en ese móvil.
 
-## Pruebas recomendadas
-
-1. **A 2 metros**: móvil en la mesa apuntando a quien habla, habla normal a 2 m y escucha el audio en Telegram. Repite con «Modo vídeo» y «Estándar» y quédate con el que mejor se oiga en ese móvil.
-2. **Pantalla apagada**: graba, apaga la pantalla 5 minutos, para y comprueba que el audio dura 5 minutos.
-3. **Sin cobertura**: modo avión, graba 20 s, para, quita el modo avión: debe llegar solo, sin abrir la app.
-4. **Con ellos**: que empiecen y paren solos desde el widget.
-
-## Compilar
+## 🛠️ Compilar
 
 Requiere JDK 17 y el SDK de Android (ruta en `local.properties`).
 
@@ -79,9 +85,9 @@ Requiere JDK 17 y el SDK de Android (ruta en `local.properties`).
 JAVA_HOME=/opt/homebrew/opt/openjdk@17 ./gradlew testDebugUnitTest assembleRelease
 ```
 
-- `scripts/setup-signing.sh`: crea una sola vez la clave de firma en `~/.config/medicomem/` (fuera del repositorio; haz copia, sin ella no se puede actualizar la app instalada).
+- `scripts/setup-signing.sh`: crea una sola vez la clave de firma en `~/.config/medicomem/`, fuera del repositorio. Haz copia: sin ella no se puede actualizar la app instalada.
 - `scripts/bump-version.sh patch|minor|major`: sube la versión.
-- `scripts/send-apk-telegram.sh -m "resumen"`: envía el APK compilado a Telegram.
 - `scripts/publish-release.sh "resumen"`: crea la release de GitHub con el APK adjunto.
+- `scripts/send-apk-telegram.sh -m "resumen"`: envía el APK compilado a Telegram.
 
-El token y el Chat ID nunca están en el código: se escriben en el menú familiar y se guardan solo en el móvil.
+El token y el Chat ID nunca están en el código: se escriben en el menú familiar y se guardan solo en el móvil. Detalles técnicos y cambios de cada versión en el [CHANGELOG](CHANGELOG.md).
