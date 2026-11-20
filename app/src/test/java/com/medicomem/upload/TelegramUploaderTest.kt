@@ -42,6 +42,30 @@ class TelegramUploaderTest {
         assertTrue(req.bodySize > 200_000)
     }
 
+    @Test fun recordingGoesAsVoiceNote() {
+        server.enqueue(MockResponse().setBody("""{"ok":true,"result":{}}"""))
+        assertEquals(SendResult.Ok, uploader.sendRecording("t", "1", meta, audio()))
+        val req = server.takeRequest()
+        assertEquals("/bott/sendVoice", req.path)
+        assertTrue(req.body.readUtf8().contains("name=\"voice\"; filename=\"a.m4a\""))
+        assertEquals(1, server.requestCount)
+    }
+
+    @Test fun rejectedVoiceFallsBackToAudioFile() {
+        server.enqueue(MockResponse().setResponseCode(400)
+            .setBody("""{"ok":false,"description":"Bad Request: VOICE_MESSAGES_FORBIDDEN"}"""))
+        server.enqueue(MockResponse().setBody("""{"ok":true,"result":{}}"""))
+        assertEquals(SendResult.Ok, uploader.sendRecording("t", "1", meta, audio()))
+        assertEquals("/bott/sendVoice", server.takeRequest().path)
+        assertEquals("/bott/sendAudio", server.takeRequest().path)
+    }
+
+    @Test fun networkErrorOnVoiceDoesNotFallBack() {
+        server.enqueue(MockResponse().setResponseCode(503))
+        assertTrue(uploader.sendRecording("t", "1", meta, audio()) is SendResult.Retry)
+        assertEquals(1, server.requestCount)
+    }
+
     @Test fun serverErrorIsRetried() {
         server.enqueue(MockResponse().setResponseCode(502))
         assertTrue(uploader.sendAudio("t", "1", meta, audio()) is SendResult.Retry)

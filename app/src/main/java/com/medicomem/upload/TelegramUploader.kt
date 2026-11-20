@@ -26,6 +26,27 @@ class TelegramUploader(
     private val baseUrl: HttpUrl = "https://api.telegram.org/".toHttpUrl(),
     private val client: OkHttpClient = defaultClient,
 ) {
+    /**
+     * Envía la grabación como nota de voz (con Telegram Premium se transcribe con el botón «→A»
+     * y se puede oír a 1,5× o 2×). Si Telegram la rechaza (p. ej. el destinatario no admite notas
+     * de voz), la reenvía como archivo de audio para que nunca se quede sin llegar.
+     */
+    fun sendRecording(token: String, chatId: String, meta: RecordingMeta, audio: File): SendResult {
+        val voice = sendVoice(token, chatId, meta, audio)
+        return if (voice is SendResult.Rejected && audio.isFile) sendAudio(token, chatId, meta, audio) else voice
+    }
+
+    fun sendVoice(token: String, chatId: String, meta: RecordingMeta, audio: File): SendResult {
+        if (!audio.isFile) return SendResult.Rejected("El archivo no existe")
+        val body = MultipartBody.Builder().setType(MultipartBody.FORM)
+            .addFormDataPart("chat_id", chatId)
+            .addFormDataPart("caption", Captions.caption(meta))
+            .addFormDataPart("duration", meta.durationSec.toString())
+            .addFormDataPart("voice", audio.name, audio.asRequestBody(AUDIO_TYPE))
+            .build()
+        return post(token, "sendVoice", body)
+    }
+
     fun sendAudio(token: String, chatId: String, meta: RecordingMeta, audio: File): SendResult {
         if (!audio.isFile) return SendResult.Rejected("El archivo no existe")
         val body = MultipartBody.Builder().setType(MultipartBody.FORM)

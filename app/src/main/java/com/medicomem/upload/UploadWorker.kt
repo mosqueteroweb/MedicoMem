@@ -21,7 +21,7 @@ class UploadWorker(context: Context, params: WorkerParameters) : CoroutineWorker
         // Sin configurar todavía: se queda guardado y se reintenta más tarde.
         if (!config.isTelegramConfigured) return@withContext Result.retry()
 
-        when (val result = TelegramUploader().sendAudio(config.botToken, config.chatId, meta, audio)) {
+        when (val result = TelegramUploader().sendRecording(config.botToken, config.chatId, meta, audio)) {
             SendResult.Ok -> {
                 store.markSent(id)
                 Result.success()
