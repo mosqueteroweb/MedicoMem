@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="idle_bg">#F5F5F0</color>
+    <color name="green">#1B5E20</color>
+    <color name="red">#B71C1C</color>
+    <color name="dark_text">#1A1A1A</color>
+    <color name="hint">#9E9E9E</color>
+</resources>

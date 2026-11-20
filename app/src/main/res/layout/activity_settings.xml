@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView style="@style/SettingsTitle" android:text="@string/settings_title" android:textSize="24sp" />
+
+        <TextView style="@style/SettingsLabel" android:text="@string/name_label" />
+        <EditText android:id="@+id/nameInput" style="@style/SettingsInput" android:inputType="textCapWords" />
+
+        <TextView style="@style/SettingsLabel" android:text="@string/token_label" />
+        <EditText android:id="@+id/tokenInput" style="@style/SettingsInput"
+            android:inputType="textVisiblePassword|textNoSuggestions" />
+
+        <TextView style="@style/SettingsLabel" android:text="@string/chat_label" />
+        <EditText android:id="@+id/chatInput" style="@style/SettingsInput" android:inputType="numberSigned" />
+        <TextView style="@style/SettingsHelp" android:text="@string/find_chat_help" />
+        <Button android:id="@+id/findChatButton" style="@style/SettingsButton" android:text="@string/find_chat" />
+        <Button android:id="@+id/testButton" style="@style/SettingsButton" android:text="@string/test_send" />
+        <TextView android:id="@+id/testResult" style="@style/SettingsHelp" android:textSize="16sp" />
+
+        <TextView style="@style/SettingsTitle" android:text="@string/network_title" />
+        <Switch android:id="@+id/mobileDataSwitch"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:minHeight="48dp" android:text="@string/mobile_data" android:textSize="16sp" />
+
+        <TextView style="@style/SettingsTitle" android:text="@string/mic_title" />
+        <RadioGroup android:layout_width="match_parent" android:layout_height="wrap_content">
+            <RadioButton android:id="@+id/micFar" android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:minHeight="48dp"
+                android:text="@string/mic_far" android:textSize="16sp" />
+            <RadioButton android:id="@+id/micStd" android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:minHeight="48dp"
+                android:text="@string/mic_std" android:textSize="16sp" />
+        </RadioGroup>
+
+        <TextView style="@style/SettingsTitle" android:text="@string/battery_title" />
+        <TextView android:id="@+id/batteryStatus" style="@style/SettingsHelp" android:textSize="16sp" />
+        <Button android:id="@+id/batteryButton" style="@style/SettingsButton" android:text="@string/battery_button" />
+        <Button android:id="@+id/appInfoButton" style="@style/SettingsButton" android:text="@string/app_info_button" />
+
+        <TextView style="@style/SettingsTitle" android:text="@string/recordings_title" />
+        <LinearLayout android:id="@+id/recordingsList"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="vertical" />
+
+        <Button android:id="@+id/closeButton" style="@style/SettingsButton"
+            android:layout_marginTop="24dp" android:text="@string/close" />
+        <TextView android:id="@+id/versionText" style="@style/SettingsHelp" android:gravity="center" />
+    </LinearLayout>
+</ScrollView>

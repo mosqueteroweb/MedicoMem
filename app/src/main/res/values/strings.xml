@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Grabar médico</string>
+    <string name="family_hint">Configuración familiar</string>
+    <string name="start">🎙️\nEMPEZAR\nA GRABAR</string>
+    <string name="starting">Un momento…</string>
+    <string name="recording">● GRABANDO</string>
+    <string name="stop">⏹️\nPARAR\nY ENVIAR</string>
+    <string name="saved">✓\nGUARDADO</string>
+    <string name="failed">No se ha podido grabar.\nVuelve a tocar.</string>
+    <string name="not_configured">Falta configurar el envío</string>
+
+    <string name="notif_title">Grabando la consulta</string>
+    <string name="notif_text">Toca para volver a la pantalla de grabar</string>
+    <string name="channel_name">Grabación</string>
+
+    <string name="widget_label">Grabar médico</string>
+    <string name="widget_idle">🎙️ GRABAR MÉDICO</string>
+    <string name="widget_recording">● GRABANDO — PARAR</string>
+
+    <string name="settings_title">Configuración familiar</string>
+    <string name="name_label">Nombre del teléfono (aparece en Telegram)</string>
+    <string name="token_label">Bot Token (de @BotFather)</string>
+    <string name="chat_label">Chat ID</string>
+    <string name="find_chat">Buscar mi Chat ID</string>
+    <string name="find_chat_help">Escribe antes cualquier mensaje a tu bot (o añádelo al grupo familiar y escribe allí).</string>
+    <string name="test_send">Probar envío ahora</string>
+    <string name="testing">Comprobando…</string>
+    <string name="test_ok">✓ Mensaje enviado: mira tu Telegram</string>
+    <string name="test_network">Sin conexión con Telegram (%1$s). Prueba con señal.</string>
+    <string name="test_rejected">Telegram lo rechaza: %1$s. Revisa token y Chat ID.</string>
+    <string name="chat_found">Chat ID encontrado: %1$s</string>
+    <string name="chat_not_found">No hay mensajes. Escribe al bot y vuelve a pulsar.</string>
+    <string name="network_title">Red para enviar</string>
+    <string name="mobile_data">Usar datos móviles y Wi‑Fi (si se apaga: solo Wi‑Fi)</string>
+    <string name="mic_title">Micrófono</string>
+    <string name="mic_far">Voz a distancia (recomendado)</string>
+    <string name="mic_std">Estándar (si se oye bajo o raro)</string>
+    <string name="battery_title">Ahorro de batería</string>
+    <string name="battery_button">Desactivar ahorro de batería</string>
+    <string name="app_info_button">Ajustes de la app (Xiaomi: inicio automático)</string>
+    <string name="battery_ok">✓ La app no tiene restricciones de batería</string>
+    <string name="battery_ko">⚠️ El ahorro de batería puede retrasar los envíos</string>
+    <string name="recordings_title">Grabaciones (las enviadas se borran a los 15 días)</string>
+    <string name="no_recordings">Todavía no hay grabaciones.</string>
+    <string name="play">▶ Oír</string>
+    <string name="resend">↻ Enviar</string>
+    <string name="close">Cerrar</string>
+    <string name="version">Versión %1$s</string>
+</resources>
