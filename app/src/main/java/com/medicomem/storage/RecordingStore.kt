@@ -30,11 +30,12 @@ class RecordingStore(baseDir: File) {
     val pendingDir = File(baseDir, "pending").apply { mkdirs() }
     val sentDir = File(baseDir, "sent").apply { mkdirs() }
 
-    fun newRecordingFile(id: String): File = File(recordingDir, "$id.m4a")
+    /** Archivo nuevo en recording/; [extension] «ogg» (Opus, Android 10+) o «m4a» (AAC). */
+    fun newRecordingFile(id: String, extension: String = "m4a"): File = File(recordingDir, "$id.$extension")
 
     /** Pasa el audio de recording/ a pending/ junto a sus datos. Devuelve el audio ya movido. */
     fun finalize(meta: RecordingMeta, audio: File): File {
-        val target = audioFile(pendingDir, meta.id)
+        val target = File(pendingDir, audio.name)
         writeMeta(pendingDir, meta)
         if (!audio.renameTo(target)) {
             audio.copyTo(target, overwrite = true)
@@ -54,8 +55,8 @@ class RecordingStore(baseDir: File) {
     fun markSent(id: String, now: Long = System.currentTimeMillis()) {
         val meta = pending(id) ?: return
         val audio = audioFile(pendingDir, id)
-        if (audio.exists() && !audio.renameTo(audioFile(sentDir, id))) {
-            audio.copyTo(audioFile(sentDir, id), overwrite = true)
+        if (audio.exists() && !audio.renameTo(File(sentDir, audio.name))) {
+            audio.copyTo(File(sentDir, audio.name), overwrite = true)
             audio.delete()
         }
         writeMeta(sentDir, meta.copy(sentAt = now))
@@ -68,8 +69,8 @@ class RecordingStore(baseDir: File) {
         val audio = audioFile(sentDir, id)
         if (!audio.exists()) return false
         writeMeta(pendingDir, meta.copy(sentAt = 0))
-        if (!audio.renameTo(audioFile(pendingDir, id))) {
-            audio.copyTo(audioFile(pendingDir, id), overwrite = true)
+        if (!audio.renameTo(File(pendingDir, audio.name))) {
+            audio.copyTo(File(pendingDir, audio.name), overwrite = true)
             audio.delete()
         }
         metaFile(sentDir, id).delete()
@@ -92,7 +93,7 @@ class RecordingStore(baseDir: File) {
 
     /** Audios que quedaron a medias en recording/ (la app murió grabando). */
     fun orphanRecordings(): List<File> =
-        recordingDir.listFiles { f -> f.isFile && f.name.endsWith(".m4a") }?.toList().orEmpty()
+        recordingDir.listFiles { f -> f.isFile && f.extension in AUDIO_EXTENSIONS }?.toList().orEmpty()
 
     private fun list(dir: File): List<RecordingMeta> =
         dir.listFiles { f -> f.name.endsWith(".properties") }
@@ -101,7 +102,8 @@ class RecordingStore(baseDir: File) {
             ?.sortedByDescending { it.startedAt * 100 + it.part }
             .orEmpty()
 
-    private fun audioFile(dir: File, id: String) = File(dir, "$id.m4a")
+    private fun audioFile(dir: File, id: String): File =
+        AUDIO_EXTENSIONS.map { File(dir, "$id.$it") }.firstOrNull { it.exists() } ?: File(dir, "$id.m4a")
     private fun metaFile(dir: File, id: String) = File(dir, "$id.properties")
 
     private fun writeMeta(dir: File, meta: RecordingMeta) {
@@ -145,6 +147,7 @@ class RecordingStore(baseDir: File) {
 
     companion object {
         const val SENT_RETENTION_DAYS = 15
+        private val AUDIO_EXTENSIONS = listOf("ogg", "m4a")
         private const val DAY_MS = 24L * 60 * 60 * 1000
     }
 }

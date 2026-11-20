@@ -36,6 +36,8 @@ class ProcessedSegmentRecorder(
     private val maxBytes: Long,
     /** Se llama (desde el hilo de grabación) al llegar al tamaño máximo o si el micrófono falla. */
     private val onLimitOrError: (error: Boolean) -> Unit,
+    /** true: Opus en OGG (formato de las notas de voz de Telegram; Android 10+). false: AAC en MP4. */
+    private val opus: Boolean = false,
 ) : SegmentRecorder {
 
     private var record: AudioRecord? = null
@@ -57,16 +59,20 @@ class ProcessedSegmentRecorder(
             if (rec.state != AudioRecord.STATE_INITIALIZED) { rec.release(); return false }
             record = rec
 
-            val format = MediaFormat.createAudioFormat(MediaFormat.MIMETYPE_AUDIO_AAC, sampleRate, 1).apply {
-                setInteger(MediaFormat.KEY_AAC_PROFILE, MediaCodecInfo.CodecProfileLevel.AACObjectLC)
+            if (opus && Build.VERSION.SDK_INT < 29) { rec.release(); record = null; return false }
+            val mime = if (opus) MediaFormat.MIMETYPE_AUDIO_OPUS else MediaFormat.MIMETYPE_AUDIO_AAC
+            val format = MediaFormat.createAudioFormat(mime, sampleRate, 1).apply {
+                if (!opus) setInteger(MediaFormat.KEY_AAC_PROFILE, MediaCodecInfo.CodecProfileLevel.AACObjectLC)
                 setInteger(MediaFormat.KEY_BIT_RATE, bitrate)
                 setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, 16 * 1024)
             }
-            val enc = MediaCodec.createEncoderByType(MediaFormat.MIMETYPE_AUDIO_AAC)
+            val enc = MediaCodec.createEncoderByType(mime)
             codec = enc
             enc.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
             enc.start()
-            muxer = MediaMuxer(file.absolutePath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4)
+            @SuppressLint("InlinedApi")
+            val container = if (opus) MediaMuxer.OutputFormat.MUXER_OUTPUT_OGG else MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4
+            muxer = MediaMuxer(file.absolutePath, container)
 
             rec.startRecording()
             if (rec.recordingState != AudioRecord.RECORDSTATE_RECORDING) { releaseAll(); return false }

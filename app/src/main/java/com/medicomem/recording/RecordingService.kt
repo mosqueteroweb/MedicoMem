@@ -148,27 +148,35 @@ class RecordingService : Service() {
 
     private fun startSegment(): Boolean {
         part++
-        val file = store.newRecordingFile("$sessionId-p$part")
+        val id = "$sessionId-p$part"
+        val ogg = store.newRecordingFile(id, "ogg")
+        val m4a = store.newRecordingFile(id, "m4a")
         val onLimit: (Boolean) -> Unit = { error ->
             if (error) Log.e(TAG, "Fallo del micrófono: se abre otra parte")
             handler.post { rotateSegment() }
         }
         val source = config.audioSource
-        // Primero el motor con tratamiento de voz; si el móvil lo rechaza, el sencillo de Android.
-        val attempts = buildList<() -> SegmentRecorder> {
+        val mic = MediaRecorder.AudioSource.MIC
+        val max = MAX_SEGMENT_BYTES
+        // Por orden: nota de voz Opus con tratamiento (Android 10+; Telegram la transcribe con «→A»),
+        // AAC con tratamiento, y por último el grabador sencillo de Android.
+        val attempts = buildList<Pair<File, () -> SegmentRecorder>> {
             if (config.enhanceVoice) {
-                add { ProcessedSegmentRecorder(source, 32_000, 64_000, file, MAX_SEGMENT_BYTES, onLimit) }
-                add { ProcessedSegmentRecorder(source, 44_100, 64_000, file, MAX_SEGMENT_BYTES, onLimit) }
-                add { ProcessedSegmentRecorder(MediaRecorder.AudioSource.MIC, 16_000, 48_000, file, MAX_SEGMENT_BYTES, onLimit) }
+                if (Build.VERSION.SDK_INT >= 29) {
+                    add(ogg to { ProcessedSegmentRecorder(source, 48_000, 48_000, ogg, max, onLimit, opus = true) })
+                }
+                add(m4a to { ProcessedSegmentRecorder(source, 32_000, 64_000, m4a, max, onLimit) })
+                add(m4a to { ProcessedSegmentRecorder(source, 44_100, 64_000, m4a, max, onLimit) })
+                add(m4a to { ProcessedSegmentRecorder(mic, 16_000, 48_000, m4a, max, onLimit) })
             }
-            add { PlainSegmentRecorder(this@RecordingService, source, 32_000, 64_000, file, MAX_SEGMENT_BYTES, onLimit) }
-            add { PlainSegmentRecorder(this@RecordingService, source, 44_100, 64_000, file, MAX_SEGMENT_BYTES, onLimit) }
-            add { PlainSegmentRecorder(this@RecordingService, MediaRecorder.AudioSource.MIC, 16_000, 32_000, file, MAX_SEGMENT_BYTES, onLimit) }
+            add(m4a to { PlainSegmentRecorder(this@RecordingService, source, 32_000, 64_000, m4a, max, onLimit) })
+            add(m4a to { PlainSegmentRecorder(this@RecordingService, source, 44_100, 64_000, m4a, max, onLimit) })
+            add(m4a to { PlainSegmentRecorder(this@RecordingService, mic, 16_000, 32_000, m4a, max, onLimit) })
         }
-        for (make in attempts) {
+        for ((file, make) in attempts) {
             val rec = make()
             if (rec.start()) {
-                Log.i(TAG, "Grabando parte $part con ${rec.javaClass.simpleName}")
+                Log.i(TAG, "Grabando parte $part con ${rec.javaClass.simpleName} en ${file.name}")
                 recorder = rec
                 active = rec
                 segmentFile = file

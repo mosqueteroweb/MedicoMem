@@ -68,6 +68,19 @@ class RecordingStoreTest {
         assertTrue(store.listSent().isEmpty())
     }
 
+    @Test fun oggRecordingsMoveLikeM4a() {
+        val store = RecordingStore(tmp.root)
+        val audio = store.newRecordingFile("o-p1", "ogg").apply { writeBytes(ByteArray(4096) { 2 }) }
+        store.finalize(meta("o-p1"), audio)
+        assertEquals("o-p1.ogg", store.pendingAudio("o-p1").name)
+        assertTrue(store.pendingAudio("o-p1").exists())
+        store.markSent("o-p1", now = 3L)
+        assertEquals("o-p1.ogg", store.sentAudio("o-p1").name)
+        assertTrue(store.sentAudio("o-p1").exists())
+        assertTrue(store.requeueSent("o-p1"))
+        assertTrue(store.pendingAudio("o-p1").exists())
+    }
+
     @Test fun orphansAreListed() {
         val store = RecordingStore(tmp.root)
         recorded(store, "crash-p1")

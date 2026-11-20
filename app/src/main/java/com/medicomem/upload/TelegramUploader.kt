@@ -47,7 +47,7 @@ class TelegramUploader(
             .addFormDataPart("chat_id", chatId)
             .addFormDataPart("caption", Captions.caption(meta))
             .addFormDataPart("duration", meta.durationSec.toString())
-            .addFormDataPart("voice", audio.name, audio.asRequestBody(AUDIO_TYPE))
+            .addFormDataPart("voice", audio.name, audio.asRequestBody(typeOf(audio)))
             .build()
         return post(token, "sendVoice", body)
     }
@@ -60,7 +60,7 @@ class TelegramUploader(
             .addFormDataPart("performer", meta.phoneName)
             .addFormDataPart("caption", Captions.caption(meta))
             .addFormDataPart("duration", meta.durationSec.toString())
-            .addFormDataPart("audio", audio.name, audio.asRequestBody(AUDIO_TYPE))
+            .addFormDataPart("audio", audio.name, audio.asRequestBody(typeOf(audio)))
             .build()
         return post(token, "sendAudio", body)
     }
@@ -129,7 +129,9 @@ class TelegramUploader(
     private fun description(json: String): String? = jsonString(json, "description")
 
     companion object {
-        private val AUDIO_TYPE = "audio/mp4".toMediaType()
+        private val MP4_TYPE = "audio/mp4".toMediaType()
+        private val OGG_TYPE = "audio/ogg".toMediaType()
+        private fun typeOf(f: File) = if (f.extension == "ogg") OGG_TYPE else MP4_TYPE
         private val OK_TRUE = Regex("\"ok\"\\s*:\\s*true")
         private val CHAT_ID = Regex("\"chat\"\\s*:\\s*\\{\\s*\"id\"\\s*:\\s*(-?\\d+)")
         private val MIGRATE_TO = Regex("\"migrate_to_chat_id\"\\s*:\\s*(-?\\d+)")

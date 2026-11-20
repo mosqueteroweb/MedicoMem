@@ -12,7 +12,7 @@ Al parar, el audio llega solo a un **bot privado de Telegram**. Sin servidor, si
 
 | Parte | Detalle |
 | :--- | :--- |
-| Audio | `AudioRecord` → tratamiento de voz propio → AAC mono 32 kHz a 64 kbps (~28 MB por hora) con `MediaCodec` + `MediaMuxer`. Si el móvil no lo admite, vuelve al `MediaRecorder` sencillo. |
+| Audio | `AudioRecord` → tratamiento de voz propio → `MediaCodec` + `MediaMuxer`. En Android 10+: **Opus en OGG** a 48 kbps (~21 MB por hora), el formato de las notas de voz de Telegram, que dibuja la onda y permite transcribir con «→A». En Android 7–9: AAC en M4A a 64 kbps. Si el móvil no admite nada de eso, vuelve al `MediaRecorder` sencillo. |
 | Tratamiento de voz | Filtro de graves (~90 Hz: golpes, aire acondicionado, zumbido), volumen automático que solo sube cuando detecta voz por encima del ruido medido (máx. +18 dB) y limitador suave. Con una voz lejana simulada: +16 dB de voz y +6 dB de diferencia voz/ruido. Se puede desactivar en el menú familiar. |
 | Micrófono | Por defecto «sin procesar» (`VOICE_RECOGNITION`, sin el volumen automático del fabricante, para no hacerlo dos veces). Opciones: estándar (`MIC`) y modo vídeo (`CAMCORDER`), que en algunos móviles capta mejor de lejos. |
 | Orientación | Al grabar, la pantalla se pone del revés con «▲ HACIA EL MÉDICO ▲» en el borde del micrófono: al girar el móvil para leerla, el micrófono queda apuntando al médico. Medidor de nivel para ver que capta. |

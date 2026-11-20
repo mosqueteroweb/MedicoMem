@@ -51,6 +51,13 @@ class TelegramUploaderTest {
         assertEquals(1, server.requestCount)
     }
 
+    @Test fun oggGoesWithOggType() {
+        server.enqueue(MockResponse().setBody("""{"ok":true,"result":{}}"""))
+        val ogg = tmp.newFile("v.ogg").apply { writeBytes(ByteArray(1000)) }
+        uploader.sendRecording("t", "1", meta, ogg)
+        assertTrue(server.takeRequest().body.readUtf8().contains("filename=\"v.ogg\"\r\nContent-Type: audio/ogg"))
+    }
+
     @Test fun rejectedVoiceFallsBackToAudioFile() {
         server.enqueue(MockResponse().setResponseCode(400)
             .setBody("""{"ok":false,"description":"Bad Request: VOICE_MESSAGES_FORBIDDEN"}"""))
