@@ -3,7 +3,7 @@
 App Android de **un solo botón** para que personas mayores graben sus consultas médicas.
 Al parar, el audio llega solo a un **bot privado de Telegram**. Sin servidor, sin cuentas, coste 0 €.
 
-- Un botón gigante (también como **widget 4×2**): toque para grabar (pantalla **roja**, vibración y pitido), toque para parar (**✓ GUARDADO** en verde).
+- Un botón gigante (también como **widget**, de 1×1 a pantalla completa): toque para grabar (pantalla **roja**, vibración y pitido), toque para parar (**✓ GUARDADO** en verde).
 - Graba con la pantalla apagada o el móvil en el bolso (servicio en primer plano + *wake lock*).
 - Envío por datos móviles o Wi‑Fi en cuanto haya señal; si no hay cobertura se reintenta solo, incluso tras reiniciar el móvil.
 - Android 7.0 o superior, APK de ~2 MB, pensado para móviles modestos.

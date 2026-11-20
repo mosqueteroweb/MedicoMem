@@ -4,15 +4,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/widget_bg_idle"
-    android:padding="8dp">
+    android:padding="10dp">
 
-    <TextView
-        android:id="@+id/widgetText"
+    <ImageView
+        android:id="@+id/widgetIcon"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:gravity="center"
-        android:text="@string/widget_idle"
-        android:textColor="#FFFFFF"
-        android:textSize="28sp"
-        android:textStyle="bold" />
+        android:contentDescription="@string/widget_label"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_mic" />
 </FrameLayout>

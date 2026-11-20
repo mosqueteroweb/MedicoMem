@@ -15,8 +15,10 @@
     <string name="channel_name">Grabación</string>
 
     <string name="widget_label">Grabar médico</string>
-    <string name="widget_idle">🎙️ GRABAR MÉDICO</string>
-    <string name="widget_recording">● GRABANDO — PARAR</string>
+    <string name="widget_idle">GRABAR</string>
+    <string name="widget_recording">PARAR</string>
+    <string name="widget_desc_idle">Grabar médico: empezar a grabar</string>
+    <string name="widget_desc_recording">Grabando: tocar para parar y enviar</string>
 
     <string name="settings_title">Configuración familiar</string>
     <string name="name_label">Nombre del teléfono (aparece en Telegram)</string>
