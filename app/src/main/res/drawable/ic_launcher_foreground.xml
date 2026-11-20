@@ -1,7 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Micrófono blanco con cruz sanitaria y punto rojo de «grabando», dentro de la zona segura del icono -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
-    <group android:translateX="30" android:translateY="30" android:scaleX="2" android:scaleY="2">
-        <path android:fillColor="#FFFFFFFF"
-            android:pathData="M12,14c1.66,0 3,-1.34 3,-3V5c0,-1.66 -1.34,-3 -3,-3S9,3.34 9,5v6c0,1.66 1.34,3 3,3zM17.3,11c0,3 -2.54,5.1 -5.3,5.1S6.7,14 6.7,11H5c0,3.41 2.72,6.23 6,6.72V21h2v-3.28c3.28,-0.48 6,-3.3 6,-6.72h-1.7z" />
-    </group>
+    <!-- cápsula -->
+    <path android:fillColor="#FFFFFFFF"
+        android:pathData="M45.8,34.2a8.2,8.2 0,0 1,16.4 0v17.1a8.2,8.2 0,0 1,-16.4 0z" />
+    <!-- cruz -->
+    <path android:fillColor="#FF1A9AA0"
+        android:pathData="M52.3,35.4h3.4v4.1h4.1v3.4h-4.1v4.1h-3.4v-4.1h-4.1v-3.4h4.1z" />
+    <!-- soporte en U, pie y base -->
+    <path android:strokeColor="#FFFFFFFF" android:strokeWidth="4.1" android:strokeLineCap="round"
+        android:fillColor="#00000000"
+        android:pathData="M35.2,46.5v2.5a18.8,18.8 0,0 0,37.6 0v-2.5M54,67.8V79M44.5,79.8H63.5" />
+    <!-- punto rojo -->
+    <path android:fillColor="#FFE53935"
+        android:pathData="M70,35.2m-4.4,0a4.4,4.4 0,1 1,8.8 0a4.4,4.4 0,1 1,-8.8 0" />
 </vector>
