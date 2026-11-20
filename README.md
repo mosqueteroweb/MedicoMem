@@ -18,6 +18,7 @@ Al parar, el audio llega solo a un **bot privado de Telegram**. Sin servidor, si
 | Orientación | Al grabar, la pantalla se pone del revés con «▲ HACIA EL MÉDICO ▲» en el borde del micrófono: al girar el móvil para leerla, el micrófono queda apuntando al médico. Medidor de nivel para ver que capta. |
 | Consultas largas | Cada archivo se corta a 42 MB (~1 h 30 min) y la grabación sigue en «Parte 2», por debajo del límite de 50 MB de los bots. |
 | Llamadas | Si entra una llamada (u otra app toma el audio), la parte grabada se cierra y se envía; al terminar, se reanuda en una parte nueva. |
+| Toques por error | Una grabación de una sola parte que dura menos de 10 s se descarta y no se envía; la pantalla muestra «Muy corta. No se ha enviado.» en gris. Las partes cortas de una consulta larga (tras una llamada) sí se envían. |
 | Cortes automáticos | A las 3 h, o con la batería al 5 % sin cargar. El mensaje lo indica. |
 | Envío | `WorkManager` + `OkHttp` en *streaming* desde disco. Llega como **nota de voz** (`sendVoice`): con Telegram Premium se transcribe con el botón «→A» y se oye a 1,5×/2×. Si Telegram rechaza la nota de voz, se envía como archivo de audio (`sendAudio`). Reintento con espera creciente (30 s, 1 min, 2 min…). |
 | Espacio | Todo en el almacenamiento privado de la app; lo enviado se borra a los 15 días. |

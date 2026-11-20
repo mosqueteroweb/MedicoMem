@@ -8,6 +8,7 @@
     <string name="doctor_hint">▲ HACIA EL MÉDICO ▲</string>
     <string name="stop">⏹️\nPARAR\nY ENVIAR</string>
     <string name="saved">✓\nGUARDADO</string>
+    <string name="too_short">Muy corta.\nNo se ha enviado.</string>
     <string name="failed">No se ha podido grabar.\nVuelve a tocar.</string>
     <string name="not_configured">Falta configurar el envío</string>
 

@@ -27,7 +27,7 @@ import com.medicomem.recording.RecordingState
 /** Pantalla única: un botón gigante que empieza y para. */
 class MainActivity : AppCompatActivity() {
 
-    private enum class Screen { IDLE, STARTING, RECORDING, SAVED, FAILED }
+    private enum class Screen { IDLE, STARTING, RECORDING, SAVED, FAILED, TOO_SHORT }
 
     private lateinit var root: View
     private lateinit var familyHint: TextView
@@ -47,7 +47,13 @@ class MainActivity : AppCompatActivity() {
     private val stateListener: (RecordingState.Event) -> Unit = { event ->
         when (event) {
             RecordingState.Event.Started -> show(Screen.RECORDING)
-            is RecordingState.Event.Stopped -> show(if (event.failed) Screen.FAILED else Screen.SAVED)
+            is RecordingState.Event.Stopped -> show(
+                when {
+                    event.failed -> Screen.FAILED
+                    event.tooShort -> Screen.TOO_SHORT
+                    else -> Screen.SAVED
+                }
+            )
         }
     }
 
@@ -120,7 +126,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun onBigButton() {
         when {
-            screen == Screen.SAVED || screen == Screen.STARTING -> Unit // evita un toque de más
+            screen == Screen.SAVED || screen == Screen.STARTING || screen == Screen.TOO_SHORT -> Unit // evita un toque de más
             RecordingState.isRecording -> {
                 // Anti-doble-toque: ignora un segundo toque justo después de empezar.
                 if (SystemClock.elapsedRealtime() - RecordingState.startedElapsed < DOUBLE_TAP_GUARD_MS) return
@@ -190,7 +196,7 @@ class MainActivity : AppCompatActivity() {
                 styleButton(Color.WHITE, c(R.color.red), 0)
                 handler.post(tick)
             }
-            Screen.SAVED, Screen.FAILED -> {
+            Screen.SAVED, Screen.FAILED, Screen.TOO_SHORT -> {
                 root.setBackgroundColor(c(if (target == Screen.SAVED) R.color.green else R.color.idle_bg))
                 familyHint.visibility = View.INVISIBLE
                 status.visibility = View.GONE
@@ -200,6 +206,10 @@ class MainActivity : AppCompatActivity() {
                 if (target == Screen.SAVED) {
                     button.text = getString(R.string.saved)
                     styleButton(c(R.color.green), Color.WHITE, Color.WHITE)
+                } else if (target == Screen.TOO_SHORT) {
+                    turn(upsideDown = false) // seguramente aún lo tiene en la mano
+                    button.text = getString(R.string.too_short)
+                    styleButton(c(R.color.grey), Color.WHITE, 0)
                 } else {
                     button.text = getString(R.string.failed)
                     styleButton(c(R.color.dark_text), Color.WHITE, 0)
@@ -211,7 +221,7 @@ class MainActivity : AppCompatActivity() {
         val bg = (root.background as? android.graphics.drawable.ColorDrawable)?.color ?: c(R.color.idle_bg)
         window.statusBarColor = bg
         window.navigationBarColor = bg
-        val light = target == Screen.IDLE || target == Screen.STARTING || target == Screen.FAILED
+        val light = target == Screen.IDLE || target == Screen.STARTING || target == Screen.FAILED || target == Screen.TOO_SHORT
         androidx.core.view.WindowCompat.getInsetsController(window, root).apply {
             isAppearanceLightStatusBars = light
             isAppearanceLightNavigationBars = light

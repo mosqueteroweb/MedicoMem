@@ -116,9 +116,9 @@ class RecordingService : Service() {
 
     private fun stopSession(autoCut: String) {
         handler.removeCallbacks(ticker)
-        finishSegment(autoCut, continues = false)
+        val discarded = finishSegment(autoCut, continues = false)
         releaseAll()
-        RecordingState.stopped(autoCut)
+        RecordingState.stopped(autoCut, tooShort = discarded)
         RecordWidgetProvider.updateAll(this)
         if (autoCut.isNotEmpty()) Feedback.stopped(this)
     }
@@ -190,22 +190,29 @@ class RecordingService : Service() {
         return false
     }
 
-    /** Cierra el archivo actual y lo pone en cola. [continues]: la consulta sigue en otra parte. */
-    private fun finishSegment(autoCut: String, continues: Boolean) {
-        val rec = recorder ?: return
-        val file = segmentFile ?: return
+    /**
+     * Cierra el archivo actual y lo pone en cola. [continues]: la consulta sigue en otra parte.
+     * Devuelve true si se ha descartado por ser una grabación suelta de menos de [MIN_SECONDS].
+     */
+    private fun finishSegment(autoCut: String, continues: Boolean): Boolean {
+        val rec = recorder ?: return false
+        val file = segmentFile ?: return false
         recorder = null
         segmentFile = null
         active = null
         rec.stop() // se conserva todo archivo con contenido real, aunque el cierre no fuera perfecto
-        if (!file.exists() || file.length() < MIN_USEFUL_BYTES) {
+        val durationSec = (SystemClock.elapsedRealtime() - segmentStartElapsed) / 1000
+        // Toque por error: una grabación de una sola parte y muy corta no se envía.
+        val tooShort = part == 1 && !continues && durationSec < MIN_SECONDS
+        if (tooShort || !file.exists() || file.length() < MIN_USEFUL_BYTES) {
+            if (tooShort) Log.i(TAG, "Grabación de $durationSec s: se descarta")
             file.delete()
-            return
+            return tooShort
         }
         val meta = RecordingMeta(
             id = file.nameWithoutExtension,
             startedAt = segmentStartWall,
-            durationSec = (SystemClock.elapsedRealtime() - segmentStartElapsed) / 1000,
+            durationSec = durationSec,
             battery = battery,
             phoneName = config.phoneName,
             autoCut = autoCut,
@@ -214,6 +221,7 @@ class RecordingService : Service() {
         )
         store.finalize(meta, file)
         UploadScheduler.enqueue(this, meta.id)
+        return false
     }
 
     private fun rotateSegment() {
@@ -326,6 +334,8 @@ class RecordingService : Service() {
         private const val TICK_MS = 5_000L
         private const val LOW_BATTERY_STOP = 5
         private const val MIN_USEFUL_BYTES = 2_048L
+        /** Las grabaciones sueltas más cortas suelen ser toques por error y no se envían. */
+        const val MIN_SECONDS = 10L
         /** 42 MB: deja margen bajo el límite de 50 MB de los bots de Telegram (~1 h 30 min a 64 kbps). */
         const val MAX_SEGMENT_BYTES = 42L * 1024 * 1024
 

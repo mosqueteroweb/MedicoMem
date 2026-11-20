@@ -8,8 +8,11 @@ import java.util.concurrent.CopyOnWriteArraySet
 object RecordingState {
     sealed class Event {
         object Started : Event()
-        /** [autoCut] vacío si la persona pulsó Parar. [failed] si no se pudo abrir el micrófono. */
-        data class Stopped(val autoCut: String, val failed: Boolean = false) : Event()
+        /**
+         * [autoCut] vacío si la persona pulsó Parar. [failed] si no se pudo abrir el micrófono.
+         * [tooShort] si duró menos del mínimo y se ha descartado (toque por error).
+         */
+        data class Stopped(val autoCut: String, val failed: Boolean = false, val tooShort: Boolean = false) : Event()
     }
 
     @Volatile var isRecording = false
@@ -34,9 +37,9 @@ object RecordingState {
         emit(Event.Started)
     }
 
-    internal fun stopped(autoCut: String, failed: Boolean = false) {
+    internal fun stopped(autoCut: String, failed: Boolean = false, tooShort: Boolean = false) {
         isRecording = false
-        emit(Event.Stopped(autoCut, failed))
+        emit(Event.Stopped(autoCut, failed, tooShort))
     }
 
     private fun emit(e: Event) = main.post { listeners.forEach { it(e) } }
