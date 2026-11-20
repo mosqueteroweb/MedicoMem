@@ -93,10 +93,24 @@ class TelegramUploaderTest {
         assertTrue(uploader.sendMessage("t", "1", "hola") !is SendResult.Ok)
     }
 
-    @Test fun findsChatIds() {
+    @Test fun findsOnlyChatsWhereTheBotStillIs() {
         server.enqueue(MockResponse().setBody(
-            """{"ok":true,"result":[{"update_id":1,"message":{"chat":{"id":111,"first_name":"P"}}},""" +
-                """{"update_id":2,"message":{"chat":{"id":-100222,"title":"Familia"}}}]}"""))
-        assertEquals(listOf("-100222", "111"), uploader.findChatIds("t"))
+            """{"ok":true,"result":[{"update_id":1,"message":{"chat":{"id":111,"first_name":"Pedro"}}},""" +
+                """{"update_id":2,"my_chat_member":{"chat":{"id":-555,"title":"Viejo"}}},""" +
+                """{"update_id":3,"message":{"chat":{"id":-100222,"title":"Familia"}}}]}"""))
+        // getChat de cada uno, del más reciente al más antiguo: -100222, -555, 111
+        server.enqueue(MockResponse().setBody("""{"ok":true,"result":{"id":-100222,"title":"M\u00e9dicos Familia","type":"supergroup"}}"""))
+        server.enqueue(MockResponse().setResponseCode(403).setBody("""{"ok":false,"description":"Forbidden: bot was kicked from the group chat"}"""))
+        server.enqueue(MockResponse().setBody("""{"ok":true,"result":{"id":111,"first_name":"Pedro","type":"private"}}"""))
+
+        val chats = uploader.findChats("t")
+        assertEquals(listOf(BotChat("-100222", "Médicos Familia", true), BotChat("111", "Pedro", false)), chats)
+    }
+
+    @Test fun upgradedGroupReportsNewId() {
+        server.enqueue(MockResponse().setResponseCode(400).setBody(
+            """{"ok":false,"error_code":400,"description":"Bad Request: group chat was upgraded to a supergroup chat","parameters":{"migrate_to_chat_id":-1001234567890}}"""))
+        assertEquals(SendResult.Migrated("-1001234567890"), uploader.sendRecording("t", "-555", meta, audio()))
+        assertEquals(1, server.requestCount) // no se cae a sendAudio
     }
 }

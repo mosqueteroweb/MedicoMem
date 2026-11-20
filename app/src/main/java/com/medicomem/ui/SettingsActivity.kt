@@ -22,6 +22,8 @@ import com.medicomem.R
 import com.medicomem.config.AppConfig
 import com.medicomem.storage.RecordingMeta
 import com.medicomem.storage.RecordingStore
+import androidx.appcompat.app.AlertDialog
+import com.medicomem.upload.BotChat
 import com.medicomem.upload.Captions
 import com.medicomem.upload.SendResult
 import com.medicomem.upload.TelegramUploader
@@ -123,12 +125,19 @@ class SettingsActivity : AppCompatActivity() {
         testResult.text = getString(R.string.testing)
         val text = "✅ MedicoMem conectado — ${config.phoneName}"
         thread {
-            val result = TelegramUploader().sendMessage(config.botToken, config.chatId, text)
+            val uploader = TelegramUploader()
+            var result = uploader.sendMessage(config.botToken, config.chatId, text)
+            if (result is SendResult.Migrated) {
+                config.chatId = result.newChatId
+                result = uploader.sendMessage(config.botToken, config.chatId, text)
+            }
             runOnUiThread {
+                chat.setText(config.chatId)
                 testResult.text = when (result) {
                     SendResult.Ok -> getString(R.string.test_ok)
                     is SendResult.Retry -> getString(R.string.test_network, result.reason)
                     is SendResult.Rejected -> getString(R.string.test_rejected, result.reason)
+                    is SendResult.Migrated -> getString(R.string.test_rejected, "el grupo ha cambiado de número")
                 }
             }
         }
@@ -138,17 +147,27 @@ class SettingsActivity : AppCompatActivity() {
         save()
         testResult.text = getString(R.string.testing)
         thread {
-            val ids = TelegramUploader().findChatIds(config.botToken)
+            val chats = TelegramUploader().findChats(config.botToken)
             runOnUiThread {
-                if (ids.isEmpty()) {
-                    testResult.text = getString(R.string.chat_not_found)
-                } else {
-                    chat.setText(ids.first())
-                    save()
-                    testResult.text = getString(R.string.chat_found, ids.joinToString())
+                when {
+                    chats.isEmpty() -> testResult.text = getString(R.string.chat_not_found)
+                    chats.size == 1 -> useChat(chats.first())
+                    else -> AlertDialog.Builder(this)
+                        .setTitle(R.string.choose_chat)
+                        .setItems(chats.map { (if (it.isGroup) "👥 " else "👤 ") + it.name }.toTypedArray()) { _, i ->
+                            useChat(chats[i])
+                        }
+                        .setNegativeButton(android.R.string.cancel) { _, _ -> testResult.text = "" }
+                        .show()
                 }
             }
         }
+    }
+
+    private fun useChat(c: BotChat) {
+        chat.setText(c.id)
+        save()
+        testResult.text = getString(R.string.chat_found, c.name)
     }
 
     @SuppressLint("BatteryLife")
