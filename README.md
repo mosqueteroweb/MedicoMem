@@ -32,11 +32,15 @@ Mensaje que llega a Telegram:
 ⚠️ Corte automático (límite de 3 h)       (si se cortó solo)
 ```
 
+## Descargar
+
+Última versión: **[MedicoMem.apk](https://github.com/mosqueteroweb/MedicoMem/releases/latest/download/MedicoMem.apk)** · [todas las versiones](https://github.com/mosqueteroweb/MedicoMem/releases)
+
 ## Puesta en marcha (una vez, en el móvil de tus padres)
 
 1. **Crea el bot**: en Telegram habla con `@BotFather`, envía `/newbot` y copia el *token*.
 2. **Escribe cualquier mensaje a tu bot** (o añádelo a un grupo familiar y escribe allí).
-3. Instala el APK y abre la app. Al primer toque pide **Micrófono** (y **Notificaciones** en Android 13+): acepta.
+3. Descarga el APK desde el enlace de arriba en el móvil, instálalo (Android pedirá permitir instalar apps de esa fuente) y abre la app. Al primer toque pide **Micrófono** (y **Notificaciones** en Android 13+): acepta.
 4. **Mantén pulsado 4 segundos** el texto gris de arriba («Configuración familiar»):
    - Nombre (`Mamá`, `Papá`…), *Bot Token* y pulsa **Buscar mi Chat ID**.
    - Pulsa **Probar envío ahora** y comprueba que llega a tu Telegram.
@@ -77,5 +81,6 @@ JAVA_HOME=/opt/homebrew/opt/openjdk@17 ./gradlew testDebugUnitTest assembleRelea
 - `scripts/setup-signing.sh`: crea una sola vez la clave de firma en `~/.config/medicomem/` (fuera del repositorio; haz copia, sin ella no se puede actualizar la app instalada).
 - `scripts/bump-version.sh patch|minor|major`: sube la versión.
 - `scripts/send-apk-telegram.sh -m "resumen"`: envía el APK compilado a Telegram.
+- `scripts/publish-release.sh "resumen"`: crea la release de GitHub con el APK adjunto.
 
 El token y el Chat ID nunca están en el código: se escriben en el menú familiar y se guardan solo en el móvil.
