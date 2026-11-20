@@ -5,6 +5,7 @@
     <string name="start">🎙️\nEMPEZAR\nA GRABAR</string>
     <string name="starting">Un momento…</string>
     <string name="recording">● GRABANDO</string>
+    <string name="doctor_hint">▲ HACIA EL MÉDICO ▲</string>
     <string name="stop">⏹️\nPARAR\nY ENVIAR</string>
     <string name="saved">✓\nGUARDADO</string>
     <string name="failed">No se ha podido grabar.\nVuelve a tocar.</string>
@@ -36,8 +37,12 @@
     <string name="network_title">Red para enviar</string>
     <string name="mobile_data">Usar datos móviles y Wi‑Fi (si se apaga: solo Wi‑Fi)</string>
     <string name="mic_title">Micrófono</string>
-    <string name="mic_far">Voz a distancia (recomendado)</string>
-    <string name="mic_std">Estándar (si se oye bajo o raro)</string>
+    <string name="enhance_voice">Mejorar voces (recomendado)</string>
+    <string name="enhance_help">Quita golpes y zumbidos graves y sube la voz de quien habla lejos sin saturar la de cerca. Desactívalo solo si en este móvil se oye raro.</string>
+    <string name="mic_raw">Micrófono sin procesar (recomendado)</string>
+    <string name="mic_std">Micrófono estándar del móvil</string>
+    <string name="mic_video">Modo vídeo (en algunos móviles capta mejor de lejos)</string>
+    <string name="placement_tips">Para que se oiga bien:\n• Móvil sobre la mesa, pantalla hacia arriba, con «▲ HACIA EL MÉDICO» apuntando al médico (ahí está el micrófono).\n• Nunca en el bolsillo ni en el bolso: la tela tapa las voces.\n• Sin funda que tape el agujero del micrófono.\n• Mejor aún: un micrófono de solapa con cable (USB‑C o minijack) encima de la mesa. Los Bluetooth graban peor.</string>
     <string name="battery_title">Ahorro de batería</string>
     <string name="battery_button">Desactivar ahorro de batería</string>
     <string name="app_info_button">Ajustes de la app (Xiaomi: inicio automático)</string>

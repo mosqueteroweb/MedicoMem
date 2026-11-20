@@ -50,7 +50,7 @@ class RecordingService : Service() {
     private lateinit var audioManager: AudioManager
     private val handler = Handler(Looper.getMainLooper())
 
-    private var recorder: MediaRecorder? = null
+    private var recorder: SegmentRecorder? = null
     private var segmentFile: File? = null
     private var segmentStartElapsed = 0L
     private var segmentStartWall = 0L
@@ -149,44 +149,34 @@ class RecordingService : Service() {
     private fun startSegment(): Boolean {
         part++
         val file = store.newRecordingFile("$sessionId-p$part")
-        // Primero la calidad elegida; si el móvil la rechaza, opciones más comunes.
-        val attempts = listOf(
-            Triple(config.audioSource, 24_000, 48_000),
-            Triple(config.audioSource, 44_100, 64_000),
-            Triple(MediaRecorder.AudioSource.MIC, 44_100, 64_000),
-            Triple(MediaRecorder.AudioSource.MIC, 16_000, 32_000),
-        ).distinct()
-        for ((source, rate, bitrate) in attempts) {
-            val rec = newRecorder()
-            try {
-                rec.setAudioSource(source)
-                rec.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
-                rec.setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
-                rec.setAudioChannels(1)
-                rec.setAudioSamplingRate(rate)
-                rec.setAudioEncodingBitRate(bitrate)
-                rec.setMaxFileSize(MAX_SEGMENT_BYTES)
-                rec.setOutputFile(file.absolutePath)
-                rec.setOnInfoListener { _, what, _ ->
-                    if (what == MediaRecorder.MEDIA_RECORDER_INFO_MAX_FILESIZE_REACHED) handler.post { rotateSegment() }
-                }
-                rec.setOnErrorListener { _, what, extra ->
-                    Log.e(TAG, "Error de MediaRecorder $what/$extra")
-                    handler.post { rotateSegment() }
-                }
-                rec.prepare()
-                rec.start()
+        val onLimit: (Boolean) -> Unit = { error ->
+            if (error) Log.e(TAG, "Fallo del micrófono: se abre otra parte")
+            handler.post { rotateSegment() }
+        }
+        val source = config.audioSource
+        // Primero el motor con tratamiento de voz; si el móvil lo rechaza, el sencillo de Android.
+        val attempts = buildList<() -> SegmentRecorder> {
+            if (config.enhanceVoice) {
+                add { ProcessedSegmentRecorder(source, 32_000, 64_000, file, MAX_SEGMENT_BYTES, onLimit) }
+                add { ProcessedSegmentRecorder(source, 44_100, 64_000, file, MAX_SEGMENT_BYTES, onLimit) }
+                add { ProcessedSegmentRecorder(MediaRecorder.AudioSource.MIC, 16_000, 48_000, file, MAX_SEGMENT_BYTES, onLimit) }
+            }
+            add { PlainSegmentRecorder(this@RecordingService, source, 32_000, 64_000, file, MAX_SEGMENT_BYTES, onLimit) }
+            add { PlainSegmentRecorder(this@RecordingService, source, 44_100, 64_000, file, MAX_SEGMENT_BYTES, onLimit) }
+            add { PlainSegmentRecorder(this@RecordingService, MediaRecorder.AudioSource.MIC, 16_000, 32_000, file, MAX_SEGMENT_BYTES, onLimit) }
+        }
+        for (make in attempts) {
+            val rec = make()
+            if (rec.start()) {
+                Log.i(TAG, "Grabando parte $part con ${rec.javaClass.simpleName}")
                 recorder = rec
+                active = rec
                 segmentFile = file
                 segmentStartElapsed = SystemClock.elapsedRealtime()
                 segmentStartWall = System.currentTimeMillis()
                 return true
-            } catch (e: Exception) {
-                Log.w(TAG, "Configuración $source/$rate rechazada: $e")
-                runCatching { rec.reset() }
-                rec.release()
-                file.delete()
             }
+            file.delete()
         }
         part--
         return false
@@ -198,10 +188,8 @@ class RecordingService : Service() {
         val file = segmentFile ?: return
         recorder = null
         segmentFile = null
-        // stop() falla si apenas hay datos, o si el archivo ya se cerró solo al llegar al tamaño máximo:
-        // por eso se conserva todo archivo con contenido real.
-        runCatching { rec.stop() }
-        rec.release()
+        active = null
+        rec.stop() // se conserva todo archivo con contenido real, aunque el cierre no fuera perfecto
         if (!file.exists() || file.length() < MIN_USEFUL_BYTES) {
             file.delete()
             return
@@ -237,10 +225,6 @@ class RecordingService : Service() {
         paused = false
         if (!startSegment()) stopSession("fallo del micrófono tras una llamada")
     }
-
-    @Suppress("DEPRECATION")
-    private fun newRecorder(): MediaRecorder =
-        if (Build.VERSION.SDK_INT >= 31) MediaRecorder(this) else MediaRecorder()
 
     // ---------- Foco de audio (llamadas) ----------
 
@@ -334,8 +318,14 @@ class RecordingService : Service() {
         private const val TICK_MS = 5_000L
         private const val LOW_BATTERY_STOP = 5
         private const val MIN_USEFUL_BYTES = 2_048L
-        /** 42 MB: deja margen bajo el límite de 50 MB de los bots de Telegram (~1 h 50 min a 48 kbps). */
+        /** 42 MB: deja margen bajo el límite de 50 MB de los bots de Telegram (~1 h 30 min a 64 kbps). */
         const val MAX_SEGMENT_BYTES = 42L * 1024 * 1024
+
+        /** Grabador activo, para el medidor de nivel de la pantalla. */
+        @Volatile private var active: SegmentRecorder? = null
+
+        /** Nivel de sonido actual (0–1); 0 si no se graba. */
+        fun currentLevel(): Float = active?.level ?: 0f
 
         fun start(context: Context) = ContextCompat.startForegroundService(
             context, Intent(context, RecordingService::class.java).setAction(ACTION_START),
@@ -372,7 +362,7 @@ class RecordingService : Service() {
                 val meta = RecordingMeta(
                     id = id,
                     startedAt = startedAt,
-                    durationSec = file.length() * 8 / 48_000,
+                    durationSec = file.length() * 8 / 64_000,
                     battery = -1,
                     phoneName = name,
                     autoCut = "el móvil se apagó grabando; el audio puede estar dañado",

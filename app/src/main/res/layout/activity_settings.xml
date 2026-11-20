@@ -32,14 +32,23 @@
             android:minHeight="48dp" android:text="@string/mobile_data" android:textSize="16sp" />
 
         <TextView style="@style/SettingsTitle" android:text="@string/mic_title" />
-        <RadioGroup android:layout_width="match_parent" android:layout_height="wrap_content">
-            <RadioButton android:id="@+id/micFar" android:layout_width="match_parent"
+        <Switch android:id="@+id/enhanceSwitch"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:minHeight="48dp" android:text="@string/enhance_voice" android:textSize="16sp" />
+        <TextView style="@style/SettingsHelp" android:text="@string/enhance_help" />
+        <RadioGroup android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="8dp">
+            <RadioButton android:id="@+id/micRaw" android:layout_width="match_parent"
                 android:layout_height="wrap_content" android:minHeight="48dp"
-                android:text="@string/mic_far" android:textSize="16sp" />
+                android:text="@string/mic_raw" android:textSize="16sp" />
             <RadioButton android:id="@+id/micStd" android:layout_width="match_parent"
                 android:layout_height="wrap_content" android:minHeight="48dp"
                 android:text="@string/mic_std" android:textSize="16sp" />
+            <RadioButton android:id="@+id/micVideo" android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:minHeight="48dp"
+                android:text="@string/mic_video" android:textSize="16sp" />
         </RadioGroup>
+        <TextView style="@style/SettingsHelp" android:text="@string/placement_tips" android:textSize="15sp" />
 
         <TextView style="@style/SettingsTitle" android:text="@string/battery_title" />
         <TextView android:id="@+id/batteryStatus" style="@style/SettingsHelp" android:textSize="16sp" />

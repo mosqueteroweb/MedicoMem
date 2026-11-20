@@ -35,6 +35,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var timer: TextView
     private lateinit var button: TextView
     private lateinit var footer: TextView
+    private lateinit var doctorHint: TextView
+    private lateinit var levelTrack: View
+    private lateinit var levelBar: View
+    private var shownLevel = 0f
 
     private val handler = Handler(Looper.getMainLooper())
     private var screen = Screen.IDLE
@@ -51,7 +55,11 @@ class MainActivity : AppCompatActivity() {
         override fun run() {
             if (screen == Screen.RECORDING) {
                 timer.text = formatElapsed(SystemClock.elapsedRealtime() - RecordingState.startedElapsed)
-                handler.postDelayed(this, 500)
+                // Medidor: sube al instante y baja suave, para que se lea como «está oyendo».
+                val level = RecordingService.currentLevel()
+                shownLevel = if (level > shownLevel) level else shownLevel * 0.85f + level * 0.15f
+                levelBar.scaleX = shownLevel.coerceIn(0.03f, 1f)
+                handler.postDelayed(this, 100)
             }
         }
     }
@@ -71,6 +79,10 @@ class MainActivity : AppCompatActivity() {
         timer = findViewById(R.id.timerText)
         button = findViewById(R.id.bigButton)
         footer = findViewById(R.id.footerText)
+        doctorHint = findViewById(R.id.doctorHint)
+        levelTrack = findViewById(R.id.levelTrack)
+        levelBar = findViewById(R.id.levelBar)
+        levelBar.pivotX = 0f
 
         button.setOnClickListener { onBigButton() }
         setupHiddenSettings()
@@ -157,6 +169,9 @@ class MainActivity : AppCompatActivity() {
                 familyHint.visibility = View.VISIBLE
                 status.visibility = View.GONE
                 timer.visibility = View.GONE
+                doctorHint.visibility = View.GONE
+                levelTrack.visibility = View.GONE
+                turn(upsideDown = false)
                 button.text = getString(if (target == Screen.STARTING) R.string.starting else R.string.start)
                 styleButton(c(R.color.green), Color.WHITE, 0)
                 window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -167,6 +182,10 @@ class MainActivity : AppCompatActivity() {
                 status.visibility = View.VISIBLE
                 status.text = getString(R.string.recording)
                 timer.visibility = View.VISIBLE
+                doctorHint.visibility = View.VISIBLE
+                levelTrack.visibility = View.VISIBLE
+                familyHint.visibility = View.GONE
+                turn(upsideDown = true)
                 button.text = getString(R.string.stop)
                 styleButton(Color.WHITE, c(R.color.red), 0)
                 handler.post(tick)
@@ -176,6 +195,8 @@ class MainActivity : AppCompatActivity() {
                 familyHint.visibility = View.INVISIBLE
                 status.visibility = View.GONE
                 timer.visibility = View.GONE
+                doctorHint.visibility = View.GONE
+                levelTrack.visibility = View.GONE
                 if (target == Screen.SAVED) {
                     button.text = getString(R.string.saved)
                     styleButton(c(R.color.green), Color.WHITE, Color.WHITE)
@@ -196,6 +217,17 @@ class MainActivity : AppCompatActivity() {
             isAppearanceLightNavigationBars = light
         }
         footer.setTextColor(if (light) c(R.color.hint) else Color.WHITE)
+    }
+
+    /**
+     * Al grabar, la pantalla se pone del revés: quien la lee tiene que girar el móvil y así el borde
+     * de abajo (donde está el micrófono) queda apuntando al médico.
+     */
+    private fun turn(upsideDown: Boolean) {
+        val target = if (upsideDown) 180f else 0f
+        if (root.rotation == target) return
+        root.animate().cancel()
+        root.animate().rotation(target).setDuration(TURN_MS).start()
     }
 
     private fun styleButton(fill: Int, text: Int, stroke: Int) {
@@ -233,6 +265,7 @@ class MainActivity : AppCompatActivity() {
         private const val DOUBLE_TAP_GUARD_MS = 1_500L
         private const val SAVED_SCREEN_MS = 3_000L
         private const val HIDDEN_PRESS_MS = 4_000L
+        private const val TURN_MS = 600L
 
         fun formatElapsed(ms: Long): String {
             val s = (ms / 1000).coerceAtLeast(0)

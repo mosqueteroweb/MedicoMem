@@ -24,13 +24,27 @@ class AppConfig(context: Context) {
         get() = prefs.getBoolean(KEY_MOBILE, true)
         set(value) = prefs.edit().putBoolean(KEY_MOBILE, value).apply()
 
-    /** true: VOICE_RECOGNITION (voz a distancia, por defecto). false: MIC estándar. */
-    var farVoiceMic: Boolean
-        get() = prefs.getBoolean(KEY_FAR_MIC, true)
-        set(value) = prefs.edit().putBoolean(KEY_FAR_MIC, value).apply()
+    /**
+     * Micrófono que se pide a Android. Por defecto VOICE_RECOGNITION: llega «en bruto» (sin el control
+     * de volumen del fabricante), que es lo ideal cuando la app trata la voz por su cuenta.
+     */
+    var micMode: MicMode
+        get() = MicMode.entries.firstOrNull { it.name == prefs.getString(KEY_MIC, null) }
+            ?: if (prefs.getBoolean(KEY_FAR_MIC, true)) MicMode.RAW else MicMode.STANDARD
+        set(value) = prefs.edit().putString(KEY_MIC, value.name).apply()
 
-    val audioSource: Int
-        get() = if (farVoiceMic) MediaRecorder.AudioSource.VOICE_RECOGNITION else MediaRecorder.AudioSource.MIC
+    val audioSource: Int get() = micMode.source
+
+    /** Tratamiento de voz propio (filtro de graves + volumen automático). Desactivable por si un móvil da problemas. */
+    var enhanceVoice: Boolean
+        get() = prefs.getBoolean(KEY_ENHANCE, true)
+        set(value) = prefs.edit().putBoolean(KEY_ENHANCE, value).apply()
+
+    enum class MicMode(val source: Int) {
+        RAW(MediaRecorder.AudioSource.VOICE_RECOGNITION),
+        STANDARD(MediaRecorder.AudioSource.MIC),
+        VIDEO(MediaRecorder.AudioSource.CAMCORDER),
+    }
 
     val maxDurationMinutes: Int
         get() = prefs.getInt(KEY_MAX_MIN, DEFAULT_MAX_MINUTES)
@@ -45,7 +59,9 @@ class AppConfig(context: Context) {
         private const val KEY_TOKEN = "bot_token"
         private const val KEY_CHAT = "chat_id"
         private const val KEY_MOBILE = "use_mobile_data"
-        private const val KEY_FAR_MIC = "far_voice_mic"
+        private const val KEY_FAR_MIC = "far_voice_mic" // versión 1.0.x
+        private const val KEY_MIC = "mic_mode"
+        private const val KEY_ENHANCE = "enhance_voice"
         private const val KEY_MAX_MIN = "max_duration_minutes"
     }
 }

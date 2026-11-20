@@ -12,8 +12,11 @@ Al parar, el audio llega solo a un **bot privado de Telegram**. Sin servidor, si
 
 | Parte | Detalle |
 | :--- | :--- |
-| Audio | `MediaRecorder`, AAC mono 24 kHz a 48 kbps (~21 MB por hora). Micrófono «voz a distancia» (`VOICE_RECOGNITION`) o estándar (`MIC`). Si el móvil rechaza esa calidad, prueba otras más comunes. |
-| Consultas largas | Cada archivo se corta a 42 MB (~1 h 50 min) y la grabación sigue en «Parte 2», por debajo del límite de 50 MB de los bots. |
+| Audio | `AudioRecord` → tratamiento de voz propio → AAC mono 32 kHz a 64 kbps (~28 MB por hora) con `MediaCodec` + `MediaMuxer`. Si el móvil no lo admite, vuelve al `MediaRecorder` sencillo. |
+| Tratamiento de voz | Filtro de graves (~90 Hz: golpes, aire acondicionado, zumbido), volumen automático que solo sube cuando detecta voz por encima del ruido medido (máx. +18 dB) y limitador suave. Con una voz lejana simulada: +16 dB de voz y +6 dB de diferencia voz/ruido. Se puede desactivar en el menú familiar. |
+| Micrófono | Por defecto «sin procesar» (`VOICE_RECOGNITION`, sin el volumen automático del fabricante, para no hacerlo dos veces). Opciones: estándar (`MIC`) y modo vídeo (`CAMCORDER`), que en algunos móviles capta mejor de lejos. |
+| Orientación | Al grabar, la pantalla se pone del revés con «▲ HACIA EL MÉDICO ▲» en el borde del micrófono: al girar el móvil para leerla, el micrófono queda apuntando al médico. Medidor de nivel para ver que capta. |
+| Consultas largas | Cada archivo se corta a 42 MB (~1 h 30 min) y la grabación sigue en «Parte 2», por debajo del límite de 50 MB de los bots. |
 | Llamadas | Si entra una llamada (u otra app toma el audio), la parte grabada se cierra y se envía; al terminar, se reanuda en una parte nueva. |
 | Cortes automáticos | A las 3 h, o con la batería al 5 % sin cargar. El mensaje lo indica. |
 | Envío | `WorkManager` + `OkHttp` en *streaming* desde disco. Llega como **nota de voz** (`sendVoice`): con Telegram Premium se transcribe con el botón «→A» y se oye a 1,5×/2×. Si Telegram rechaza la nota de voz, se envía como archivo de audio (`sendAudio`). Reintento con espera creciente (30 s, 1 min, 2 min…). |
@@ -49,10 +52,17 @@ Mensaje que llega a Telegram:
 | Huawei / Honor | Batería → **Inicio de aplicaciones**: gestionar manualmente y activar las tres opciones. |
 | Oppo / Realme / OnePlus | Ajustes de la app → Batería → **Permitir actividad en segundo plano** e inicio automático. |
 
+## Para que se oiga bien
+
+- Móvil **sobre la mesa**, pantalla arriba, con «▲ HACIA EL MÉDICO» apuntando al médico.
+- **Nunca en el bolsillo ni en el bolso**: la tela tapa las voces aunque la grabación siga.
+- Sin funda que tape el agujero del micrófono (borde inferior).
+- Mejor aún: un **micrófono de solapa con cable** (USB‑C o minijack) sobre la mesa. Los Bluetooth graban con calidad de llamada.
+
 ## Pruebas recomendadas
 
-1. **A 2 metros**: móvil en la mesa con la pantalla apagada, habla normal a 2 m y escucha el audio en Telegram. Si se oye bajo, cambia el micrófono a «Estándar».
-2. **Bolsillo**: graba, apaga la pantalla 5 minutos, para y comprueba que el audio dura 5 minutos.
+1. **A 2 metros**: móvil en la mesa apuntando a quien habla, habla normal a 2 m y escucha el audio en Telegram. Repite con «Modo vídeo» y «Estándar» y quédate con el que mejor se oiga en ese móvil.
+2. **Pantalla apagada**: graba, apaga la pantalla 5 minutos, para y comprueba que el audio dura 5 minutos.
 3. **Sin cobertura**: modo avión, graba 20 s, para, quita el modo avión: debe llegar solo, sin abrir la app.
 4. **Con ellos**: que empiecen y paren solos desde el widget.
 

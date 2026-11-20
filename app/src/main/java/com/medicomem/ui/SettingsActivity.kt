@@ -41,8 +41,10 @@ class SettingsActivity : AppCompatActivity() {
     private lateinit var chat: EditText
     private lateinit var testResult: TextView
     private lateinit var mobileData: Switch
-    private lateinit var micFar: RadioButton
+    private lateinit var micRaw: RadioButton
     private lateinit var micStd: RadioButton
+    private lateinit var micVideo: RadioButton
+    private lateinit var enhance: Switch
     private lateinit var batteryStatus: TextView
     private lateinit var list: LinearLayout
     private var player: MediaPlayer? = null
@@ -58,8 +60,10 @@ class SettingsActivity : AppCompatActivity() {
         chat = findViewById(R.id.chatInput)
         testResult = findViewById(R.id.testResult)
         mobileData = findViewById(R.id.mobileDataSwitch)
-        micFar = findViewById(R.id.micFar)
+        micRaw = findViewById(R.id.micRaw)
         micStd = findViewById(R.id.micStd)
+        micVideo = findViewById(R.id.micVideo)
+        enhance = findViewById(R.id.enhanceSwitch)
         batteryStatus = findViewById(R.id.batteryStatus)
         list = findViewById(R.id.recordingsList)
 
@@ -67,7 +71,12 @@ class SettingsActivity : AppCompatActivity() {
         token.setText(config.botToken)
         chat.setText(config.chatId)
         mobileData.isChecked = config.useMobileData
-        if (config.farVoiceMic) micFar.isChecked = true else micStd.isChecked = true
+        enhance.isChecked = config.enhanceVoice
+        when (config.micMode) {
+            AppConfig.MicMode.RAW -> micRaw.isChecked = true
+            AppConfig.MicMode.STANDARD -> micStd.isChecked = true
+            AppConfig.MicMode.VIDEO -> micVideo.isChecked = true
+        }
         findViewById<TextView>(R.id.versionText).text = getString(R.string.version, BuildConfig.VERSION_NAME)
 
         findViewById<Button>(R.id.findChatButton).setOnClickListener { findChatId() }
@@ -99,7 +108,12 @@ class SettingsActivity : AppCompatActivity() {
         config.botToken = token.text.toString()
         config.chatId = chat.text.toString()
         config.useMobileData = mobileData.isChecked
-        config.farVoiceMic = micFar.isChecked
+        config.enhanceVoice = enhance.isChecked
+        config.micMode = when {
+            micStd.isChecked -> AppConfig.MicMode.STANDARD
+            micVideo.isChecked -> AppConfig.MicMode.VIDEO
+            else -> AppConfig.MicMode.RAW
+        }
         // Aplica la nueva red a lo que ya está en cola, o reintenta ya con el token corregido.
         if (networkChanged || credentialsChanged) UploadScheduler.enqueueAllPending(this, ExistingWorkPolicy.REPLACE)
     }

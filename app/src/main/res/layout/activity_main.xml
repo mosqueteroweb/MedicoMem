@@ -18,6 +18,20 @@
         android:textColor="@color/hint"
         android:textSize="13sp" />
 
+    <!-- Al grabar, la pantalla gira 180°: este texto queda en el borde del micrófono, el que mira al médico. -->
+    <TextView
+        android:id="@+id/doctorHint"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/doctor_hint_bg"
+        android:gravity="center"
+        android:paddingVertical="10dp"
+        android:text="@string/doctor_hint"
+        android:textColor="@color/red"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:visibility="gone" />
+
     <TextView
         android:id="@+id/statusText"
         android:layout_width="match_parent"
@@ -40,6 +54,24 @@
         android:textSize="64sp"
         android:textStyle="bold"
         android:visibility="gone" />
+
+    <!-- Medidor de nivel: se mueve al oír voces -->
+    <FrameLayout
+        android:id="@+id/levelTrack"
+        android:layout_width="match_parent"
+        android:layout_height="22dp"
+        android:layout_marginHorizontal="24dp"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/level_track"
+        android:importantForAccessibility="no"
+        android:visibility="gone">
+
+        <View
+            android:id="@+id/levelBar"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/level_bar" />
+    </FrameLayout>
 
     <TextView
         android:id="@+id/bigButton"
