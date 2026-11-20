@@ -56,18 +56,23 @@ Mensaje que llega a Telegram:
    - ✍️ Escribe el **nombre** (`Mamá`, `Papá`…) y pega el **token** en «Bot Token».
    - 🔎 Pulsa **Buscar chat o grupo** y elige a dónde se envían (👤 tú o 👥 el grupo).
    - ✅ Pulsa **Probar envío ahora**: te llegará un mensaje con el modelo del móvil, su versión de Android y si habrá transcripción.
-   - 🔋 Pulsa **Desactivar ahorro de batería** (y mira la tabla de abajo según la marca).
+   - 🔋 Pulsa **Desactivar ahorro de batería**. En **Xiaomi, Redmi, POCO, Huawei y Honor** haz además los pasos de la tabla de abajo: sin ellos la grabación puede cortarse.
 6. 🧩 En el escritorio, mantén pulsado un hueco → **Widgets** → **Grabar médico**, y ponlo bien grande en un sitio despejado.
-7. 🧪 Haz una prueba de más de 10 segundos y comprueba que llega.
+7. 🧪 Haz una prueba de más de 10 segundos y comprueba que llega. Después, la prueba de la pantalla apagada (abajo).
 
-### 🔋 Ahorro de batería según la marca
+### 🔋 Ahorro de batería
 
-| Marca | Qué tocar además |
-| :--- | :--- |
-| Xiaomi / Redmi / POCO | Ajustes de la app → **Inicio automático** activado; **Ahorro de batería → Sin restricciones**. |
-| Samsung | Ajustes → Batería → **Límites de uso en segundo plano**: quitar la app de «inactivas» y añadirla a «nunca en reposo». |
-| Huawei / Honor | Batería → **Inicio de aplicaciones**: gestionar manualmente y activar las tres opciones. |
-| Oppo / Realme / OnePlus | Ajustes de la app → Batería → **Permitir actividad en segundo plano** e inicio automático. |
+La app no funciona todo el rato: solo trabaja sin estar en pantalla **mientras graba con la pantalla apagada** y **cuando envía un audio que se quedó pendiente** por falta de cobertura. Quitarle el ahorro de batería no hace que gaste más; solo evita que Android la congele en esos dos momentos (la grabación se cortaría o el envío se retrasaría horas).
+
+| Marca | ¿Hace falta? | Qué tocar además del botón **Desactivar ahorro de batería** |
+| :--- | :--- | :--- |
+| Xiaomi / Redmi / POCO | ⚠️ **Imprescindible** | Botón **Ajustes de la app** → **Inicio automático** activado; **Ahorro de batería → Sin restricciones**. Si al tocar el widget no se abre la app: **Otros permisos → Mostrar ventanas emergentes mientras se ejecuta en segundo plano**. |
+| Huawei / Honor | ⚠️ **Imprescindible** | Batería → **Inicio de aplicaciones**: gestionar manualmente y activar las tres opciones. |
+| Samsung | 👍 Recomendable | Ajustes → Batería → **Límites de uso en segundo plano**: quitar la app de «inactivas» y añadirla a «nunca en reposo». |
+| Oppo / Realme / OnePlus | 👍 Recomendable | Ajustes de la app → Batería → **Permitir actividad en segundo plano** e inicio automático. |
+| LG, Motorola, Google Pixel y otros | 👍 Recomendable | Basta con el botón de la app. |
+
+🧪 **Prueba para saber si está bien**: graba, apaga la pantalla 5 minutos y para. Si el audio llega y dura 5 minutos, todo correcto.
 
 ## 👂 Para que se oiga bien
 
