@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.media.MediaPlayer
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
 import android.provider.Settings
@@ -79,7 +80,8 @@ class SettingsActivity : AppCompatActivity() {
             AppConfig.MicMode.STANDARD -> micStd.isChecked = true
             AppConfig.MicMode.VIDEO -> micVideo.isChecked = true
         }
-        findViewById<TextView>(R.id.versionText).text = getString(R.string.version, BuildConfig.VERSION_NAME)
+        findViewById<TextView>(R.id.versionText).text =
+            getString(R.string.version, BuildConfig.VERSION_NAME) + "\n" + deviceInfo()
 
         findViewById<Button>(R.id.findChatButton).setOnClickListener { findChatId() }
         findViewById<Button>(R.id.testButton).setOnClickListener { testSend() }
@@ -123,7 +125,8 @@ class SettingsActivity : AppCompatActivity() {
     private fun testSend() {
         save()
         testResult.text = getString(R.string.testing)
-        val text = "✅ MedicoMem conectado — ${config.phoneName}"
+        val text = "✅ MedicoMem conectado — ${config.phoneName}\n📱 ${deviceInfo()} · app ${BuildConfig.VERSION_NAME}\n" +
+            if (Build.VERSION.SDK_INT >= 29) "🎤 Notas de voz con transcripción →A" else "🎤 Audio M4A (sin →A: necesita Android 10)"
         thread {
             val uploader = TelegramUploader()
             var result = uploader.sendMessage(config.botToken, config.chatId, text)
@@ -243,6 +246,13 @@ class SettingsActivity : AppCompatActivity() {
         this.text = text
         textSize = 15f
         setTextColor(ContextCompat.getColor(this@SettingsActivity, R.color.dark_text))
+    }
+
+    /** «LG G7 ThinQ (LM-G710EM) · Android 10». */
+    private fun deviceInfo(): String {
+        val maker = Build.MANUFACTURER.replaceFirstChar { it.uppercase() }
+        val model = if (Build.MODEL.startsWith(maker, ignoreCase = true)) Build.MODEL else "$maker ${Build.MODEL}"
+        return "$model · Android ${Build.VERSION.RELEASE}"
     }
 
     private fun dp(v: Int) = (v * resources.displayMetrics.density).toInt()
