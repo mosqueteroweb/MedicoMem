@@ -15,6 +15,7 @@
     <application
         android:name=".MedicoMemApp"
         android:allowBackup="false"
+        android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="false"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -31,6 +32,13 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Entrada privada para el widget: solo esta abre la pantalla con la orden de empezar/parar.
+             Al no estar exportada, ninguna otra app puede usarla. -->
+        <activity-alias
+            android:name=".ui.WidgetToggle"
+            android:exported="false"
+            android:targetActivity=".ui.MainActivity" />
 
         <activity
             android:name=".ui.SettingsActivity"

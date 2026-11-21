@@ -8,12 +8,16 @@
     <string name="doctor_hint">▲ HACIA EL MÉDICO ▲</string>
     <string name="stop">⏹️\nPARAR\nY ENVIAR</string>
     <string name="saved">✓\nGUARDADO</string>
+    <string name="no_permission">Falta el permiso\ndel micrófono.\nToca aquí y actívalo\nen «Permisos».</string>
+    <string name="notif_stop">⏹ Parar y enviar</string>
+    <string name="token_show">Mostrar u ocultar el token</string>
+    <string name="playing_stop">⏹ Parar</string>
     <string name="too_short">Muy corta.\nNo se ha enviado.</string>
     <string name="failed">No se ha podido grabar.\nVuelve a tocar.</string>
     <string name="not_configured">Falta configurar el envío</string>
 
     <string name="notif_title">Grabando la consulta</string>
-    <string name="notif_text">Toca para volver a la pantalla de grabar</string>
+    <string name="notif_text">Toca para abrir. Con la flecha ⌄: Parar y enviar</string>
     <string name="channel_name">Grabación</string>
 
     <string name="widget_label">Grabar médico</string>

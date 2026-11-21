@@ -12,15 +12,26 @@
 
         <TextView style="@style/SettingsTitle" android:text="@string/settings_title" android:textSize="24sp" />
 
-        <TextView style="@style/SettingsLabel" android:text="@string/name_label" />
-        <EditText android:id="@+id/nameInput" style="@style/SettingsInput" android:inputType="textCapWords" />
+        <TextView style="@style/SettingsLabel" android:labelFor="@id/nameInput" android:text="@string/name_label" />
+        <EditText android:id="@+id/nameInput" style="@style/SettingsInput" android:autofillHints="name"
+            android:imeOptions="flagNoPersonalizedLearning" android:inputType="textCapWords" />
 
-        <TextView style="@style/SettingsLabel" android:text="@string/token_label" />
-        <EditText android:id="@+id/tokenInput" style="@style/SettingsInput"
-            android:inputType="textVisiblePassword|textNoSuggestions" />
+        <TextView style="@style/SettingsLabel" android:labelFor="@id/tokenInput" android:text="@string/token_label" />
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:gravity="center_vertical" android:orientation="horizontal">
+            <!-- Oculto con puntos: no aparece en capturas ni en la vista de apps recientes -->
+            <EditText android:id="@+id/tokenInput" style="@style/SettingsInput"
+                android:layout_width="0dp" android:layout_weight="1" android:importantForAutofill="no"
+                android:imeOptions="flagNoPersonalizedLearning"
+                android:inputType="textPassword|textNoSuggestions" android:fontFamily="monospace" />
+            <Button android:id="@+id/tokenToggle" android:layout_width="56dp" android:layout_height="52dp"
+                android:contentDescription="@string/token_show" android:text="👁" android:textSize="20sp"
+                style="?android:attr/borderlessButtonStyle" />
+        </LinearLayout>
 
-        <TextView style="@style/SettingsLabel" android:text="@string/chat_label" />
-        <EditText android:id="@+id/chatInput" style="@style/SettingsInput" android:inputType="numberSigned" />
+        <TextView style="@style/SettingsLabel" android:labelFor="@id/chatInput" android:text="@string/chat_label" />
+        <EditText android:id="@+id/chatInput" style="@style/SettingsInput" android:importantForAutofill="no"
+            android:imeOptions="flagNoPersonalizedLearning" android:inputType="numberSigned" />
         <TextView style="@style/SettingsHelp" android:text="@string/find_chat_help" />
         <Button android:id="@+id/findChatButton" style="@style/SettingsButton" android:text="@string/find_chat" />
         <Button android:id="@+id/testButton" style="@style/SettingsButton" android:text="@string/test_send" />

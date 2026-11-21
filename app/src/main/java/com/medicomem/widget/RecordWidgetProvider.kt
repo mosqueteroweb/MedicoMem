@@ -71,8 +71,10 @@ class RecordWidgetProvider : AppWidgetProvider() {
             val recording = RecordingState.isRecording
             val tap = PendingIntent.getActivity(
                 context, 0,
-                Intent(context, MainActivity::class.java)
+                Intent().setClassName(context, MainActivity.WIDGET_ALIAS)
                     .setAction(MainActivity.ACTION_TOGGLE)
+                    // Lo que veía la persona al tocar: si era «PARAR» y ya no se graba, no se empieza otra.
+                    .putExtra(MainActivity.EXTRA_WIDGET_WAS_RECORDING, recording)
                     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP),
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
             )

@@ -39,7 +39,7 @@ import java.util.Date
 import java.util.Locale
 
 /**
- * Graba en primer plano (sigue con la pantalla apagada o el móvil en el bolso).
+ * Graba en primer plano (sigue con la pantalla apagada).
  * Cada consulta puede tener varias partes: al acercarse al límite de tamaño de Telegram,
  * o tras una llamada, se cierra el archivo, se pone en cola de envío y se abre otro.
  */
@@ -75,7 +75,11 @@ class RecordingService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
             ACTION_START -> if (!RecordingState.isRecording) startSession() else ensureForeground()
-            ACTION_STOP -> if (RecordingState.isRecording) stopSession("") else stopSelf()
+            ACTION_STOP -> if (RecordingState.isRecording) {
+                // Desde la notificación no hay pantalla que vibre: lo hace el servicio.
+                if (intent.getBooleanExtra(EXTRA_FROM_NOTIFICATION, false)) Feedback.stopped(this)
+                stopSession("")
+            } else stopSelf()
             else -> if (!RecordingState.isRecording) stopSelf()
         }
         return START_NOT_STICKY
@@ -312,14 +316,24 @@ class RecordingService : Service() {
             this, 0, Intent(this, MainActivity::class.java),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
+        // Botón «Parar y enviar» que funciona también con el móvil bloqueado (no pide PIN).
+        val stop = PendingIntent.getService(
+            this, 1,
+            Intent(this, RecordingService::class.java).setAction(ACTION_STOP).putExtra(EXTRA_FROM_NOTIFICATION, true),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
         val notification: Notification = NotificationCompat.Builder(this, CHANNEL)
             .setSmallIcon(R.drawable.ic_mic)
             .setContentTitle(getString(R.string.notif_title))
             .setContentText(getString(R.string.notif_text))
             .setContentIntent(open)
+            .addAction(R.drawable.ic_stop, getString(R.string.notif_stop), stop)
             .setOngoing(true)
+            .setSilent(true)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setCategory(NotificationCompat.CATEGORY_SERVICE)
-            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
             .build()
         val type = if (Build.VERSION.SDK_INT >= 30) ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE else 0
         ServiceCompat.startForeground(this, NOTIF_ID, notification, type)
@@ -329,7 +343,10 @@ class RecordingService : Service() {
         private const val TAG = "RecordingService"
         const val ACTION_START = "com.medicomem.START"
         const val ACTION_STOP = "com.medicomem.STOP"
-        private const val CHANNEL = "grabacion"
+        /** Canal v2: importancia normal (sin sonido) para que se vea en la pantalla de bloqueo. */
+        private const val CHANNEL = "grabacion_v2"
+        private const val OLD_CHANNEL = "grabacion"
+        private const val EXTRA_FROM_NOTIFICATION = "from_notification"
         private const val NOTIF_ID = 1
         private const val TICK_MS = 5_000L
         private const val LOW_BATTERY_STOP = 5
@@ -356,9 +373,14 @@ class RecordingService : Service() {
         fun createChannel(context: Context) {
             if (Build.VERSION.SDK_INT < 26) return
             val nm = context.getSystemService(NotificationManager::class.java)
+            nm.deleteNotificationChannel(OLD_CHANNEL) // de importancia baja: no salía en el bloqueo
             if (nm.getNotificationChannel(CHANNEL) == null) {
                 nm.createNotificationChannel(
-                    NotificationChannel(CHANNEL, context.getString(R.string.channel_name), NotificationManager.IMPORTANCE_LOW)
+                    NotificationChannel(CHANNEL, context.getString(R.string.channel_name), NotificationManager.IMPORTANCE_DEFAULT).apply {
+                        setSound(null, null)
+                        enableVibration(false)
+                        lockscreenVisibility = Notification.VISIBILITY_PUBLIC
+                    }
                 )
             }
         }
@@ -380,7 +402,8 @@ class RecordingService : Service() {
                 val meta = RecordingMeta(
                     id = id,
                     startedAt = startedAt,
-                    durationSec = file.length() * 8 / 64_000,
+                    // Estimación por tamaño: Opus a 48 kbps, AAC a 64 kbps.
+                    durationSec = file.length() * 8 / if (file.extension == "ogg") 48_000 else 64_000,
                     battery = -1,
                     phoneName = name,
                     autoCut = "el móvil se apagó grabando; el audio puede estar dañado",

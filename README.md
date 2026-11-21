@@ -8,6 +8,7 @@ Al parar, el audio llega solo al **Telegram de la familia**. Sin servidor, sin c
 ## ✨ Qué hace
 
 - 🎙️ **Un botón gigante**: un toque para grabar (pantalla **roja**, vibración y pitido) y otro para parar (**✓ GUARDADO** en verde).
+- 🔓 **Se para sin desbloquear el móvil**: con la pantalla apagada, basta pulsar el botón de encendido y aparece la pantalla roja, sin PIN ni patrón. También desde la notificación (flecha ⌄ → **Parar y enviar**).
 - 🧩 **Widget** en el escritorio, de 1×1 a pantalla completa: verde para grabar, rojo para parar.
 - 🔄 **Ayuda a colocar el móvil**: al grabar, la pantalla se pone del revés con «▲ HACIA EL MÉDICO ▲», así el micrófono queda apuntando al médico.
 - 🔊 **Mejora las voces**: sube la voz de quien habla lejos, quita golpes y zumbidos y no deja que sature la voz cercana.
@@ -41,6 +42,12 @@ Mensaje que llega a Telegram:
 
 Última versión: **[MedicoMem.apk](https://github.com/mosqueteroweb/MedicoMem/releases/latest/download/MedicoMem.apk)** · [todas las versiones](https://github.com/mosqueteroweb/MedicoMem/releases) · [novedades](CHANGELOG.md)
 
+## 🔐 Privacidad
+
+- Las grabaciones y el token solo se guardan en el móvil, en la zona privada de la app: no van a copias en la nube ni pasan a un móvil nuevo al cambiar de teléfono.
+- Telegram guarda los audios en sus servidores: los chats con bots y los grupos **no** tienen cifrado de extremo a extremo. Tenlo en cuenta al elegir quién está en el grupo.
+- Es buena idea **avisar al médico** de que se graba («es para que mis hijos se enteren bien»). Suele agradecerlo y evita malentendidos.
+
 ## ⚙️ Configuración (una sola vez)
 
 **En tu Telegram**
@@ -53,7 +60,7 @@ Mensaje que llega a Telegram:
 3. ⬇️ Abre el enlace de descarga, instala el APK (Android pedirá permitir instalar apps de esa fuente) y abre la app.
 4. 🎙️ Toca el botón verde una vez y acepta **Micrófono** (y **Notificaciones** en Android 13 o superior). Vuelve a tocar para parar.
 5. 🔒 **Mantén pulsado 4 segundos** el texto gris de arriba («Configuración familiar»):
-   - ✍️ Escribe el **nombre** (`Mamá`, `Papá`…) y pega el **token** en «Bot Token».
+   - ✍️ Escribe el **nombre** (`Mamá`, `Papá`…) y pega el **token** en «Bot Token» (se ve con puntos; 👁 para comprobarlo).
    - 🔎 Pulsa **Buscar chat o grupo** y elige a dónde se envían (👤 tú o 👥 el grupo).
    - ✅ Pulsa **Probar envío ahora**: te llegará un mensaje con el modelo del móvil, su versión de Android y si habrá transcripción.
    - 🔋 Pulsa **Desactivar ahorro de batería**. En **Xiaomi, Redmi, POCO, Huawei y Honor** haz además los pasos de la tabla de abajo: sin ellos la grabación puede cortarse.

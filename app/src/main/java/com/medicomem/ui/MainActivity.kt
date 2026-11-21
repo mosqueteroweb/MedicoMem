@@ -27,7 +27,7 @@ import com.medicomem.recording.RecordingState
 /** Pantalla única: un botón gigante que empieza y para. */
 class MainActivity : AppCompatActivity() {
 
-    private enum class Screen { IDLE, STARTING, RECORDING, SAVED, FAILED, TOO_SHORT }
+    private enum class Screen { IDLE, STARTING, RECORDING, SAVED, FAILED, TOO_SHORT, NO_PERMISSION }
 
     private lateinit var root: View
     private lateinit var familyHint: TextView
@@ -106,6 +106,7 @@ class MainActivity : AppCompatActivity() {
         RecordingState.addListener(stateListener)
         when {
             RecordingState.isRecording -> show(Screen.RECORDING)
+            screen == Screen.NO_PERMISSION && granted(Manifest.permission.RECORD_AUDIO) -> show(Screen.IDLE)
             screen == Screen.RECORDING || screen == Screen.IDLE -> show(Screen.IDLE)
         }
         footer.visibility = if (AppConfig(this).isTelegramConfigured) View.GONE else View.VISIBLE
@@ -117,16 +118,20 @@ class MainActivity : AppCompatActivity() {
         super.onStop()
     }
 
+    /** Solo obedece la orden de empezar/parar si llega por la entrada privada del widget. */
     private fun handleWidgetIntent(intent: Intent?) {
-        if (intent?.action == ACTION_TOGGLE) {
-            intent.action = null
-            onBigButton()
-        }
+        if (intent?.action != ACTION_TOGGLE) return
+        intent.action = null
+        if (intent.component?.className != WIDGET_ALIAS) return
+        // El widget mostraba «PARAR» pero ya no se graba (Android cerró la app): no empezar otra.
+        if (intent.getBooleanExtra(EXTRA_WIDGET_WAS_RECORDING, false) && !RecordingState.isRecording) return
+        onBigButton()
     }
 
     private fun onBigButton() {
         when {
             screen == Screen.SAVED || screen == Screen.STARTING || screen == Screen.TOO_SHORT -> Unit // evita un toque de más
+            screen == Screen.NO_PERMISSION && !granted(Manifest.permission.RECORD_AUDIO) -> openAppSettings()
             RecordingState.isRecording -> {
                 // Anti-doble-toque: ignora un segundo toque justo después de empezar.
                 if (SystemClock.elapsedRealtime() - RecordingState.startedElapsed < DOUBLE_TAP_GUARD_MS) return
@@ -158,8 +163,14 @@ class MainActivity : AppCompatActivity() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == REQ_PERMS && pendingStartAfterPermission) {
             pendingStartAfterPermission = false
-            if (granted(Manifest.permission.RECORD_AUDIO)) startRecording()
+            // Si se deniega (o ya se denegó «para siempre»), se explica en vez de dejar el botón muerto.
+            if (granted(Manifest.permission.RECORD_AUDIO)) startRecording() else show(Screen.NO_PERMISSION)
         }
+    }
+
+    private fun openAppSettings() {
+        startActivity(Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+            android.net.Uri.parse("package:$packageName")))
     }
 
     private fun granted(p: String) = ContextCompat.checkSelfPermission(this, p) == PackageManager.PERMISSION_GRANTED
@@ -170,7 +181,7 @@ class MainActivity : AppCompatActivity() {
         handler.removeCallbacks(backToIdle)
         val c = { id: Int -> ContextCompat.getColor(this, id) }
         when (target) {
-            Screen.IDLE, Screen.STARTING -> {
+            Screen.IDLE, Screen.STARTING, Screen.NO_PERMISSION -> {
                 root.setBackgroundColor(c(R.color.idle_bg))
                 familyHint.visibility = View.VISIBLE
                 status.visibility = View.GONE
@@ -178,8 +189,12 @@ class MainActivity : AppCompatActivity() {
                 doctorHint.visibility = View.GONE
                 levelTrack.visibility = View.GONE
                 turn(upsideDown = false)
-                button.text = getString(if (target == Screen.STARTING) R.string.starting else R.string.start)
-                styleButton(c(R.color.green), Color.WHITE, 0)
+                button.text = getString(when (target) {
+                    Screen.STARTING -> R.string.starting
+                    Screen.NO_PERMISSION -> R.string.no_permission
+                    else -> R.string.start
+                })
+                styleButton(c(if (target == Screen.NO_PERMISSION) R.color.dark_text else R.color.green), Color.WHITE, 0)
                 window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
             }
             Screen.RECORDING -> {
@@ -218,15 +233,28 @@ class MainActivity : AppCompatActivity() {
             }
         }
         button.contentDescription = button.text
+        // Mientras graba (y en el «✓ GUARDADO»), la pantalla aparece encima del bloqueo: se puede parar
+        // con solo pulsar el botón de encendido, sin PIN ni patrón.
+        overLockScreen(target == Screen.RECORDING || target == Screen.SAVED || target == Screen.TOO_SHORT)
         val bg = (root.background as? android.graphics.drawable.ColorDrawable)?.color ?: c(R.color.idle_bg)
         window.statusBarColor = bg
         window.navigationBarColor = bg
-        val light = target == Screen.IDLE || target == Screen.STARTING || target == Screen.FAILED || target == Screen.TOO_SHORT
+        val light = target != Screen.RECORDING && target != Screen.SAVED
         androidx.core.view.WindowCompat.getInsetsController(window, root).apply {
             isAppearanceLightStatusBars = light
             isAppearanceLightNavigationBars = light
         }
         footer.setTextColor(if (light) c(R.color.hint) else Color.WHITE)
+    }
+
+    private fun overLockScreen(on: Boolean) {
+        if (Build.VERSION.SDK_INT >= 27) {
+            setShowWhenLocked(on)
+        } else {
+            @Suppress("DEPRECATION")
+            if (on) window.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED)
+            else window.clearFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED)
+        }
     }
 
     /**
@@ -271,6 +299,9 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         const val ACTION_TOGGLE = "com.medicomem.TOGGLE"
+        /** Entrada privada (activity-alias no exportado) que usa el widget. */
+        const val WIDGET_ALIAS = "com.medicomem.ui.WidgetToggle"
+        const val EXTRA_WIDGET_WAS_RECORDING = "widget_was_recording"
         private const val REQ_PERMS = 1
         private const val DOUBLE_TAP_GUARD_MS = 1_500L
         private const val SAVED_SCREEN_MS = 3_000L

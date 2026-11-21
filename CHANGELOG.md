@@ -1,5 +1,27 @@
 # Changelog
 
+## 1.3.0 — 2026-11-21
+Auditoría de seguridad y de usabilidad.
+
+**Usabilidad**
+- 🔓 Mientras graba, la pantalla aparece **encima del bloqueo**: se para pulsando el botón de encendido y tocando PARAR, sin PIN ni patrón (`setShowWhenLocked`).
+- ⏹ La notificación tiene el botón **Parar y enviar**, que funciona con el móvil bloqueado. Canal nuevo de importancia normal y sin sonido para que se vea en la pantalla de bloqueo.
+- 🎙️ Si se deniega el permiso del micrófono, el botón lo explica y lleva a los ajustes de la app, en vez de quedarse sin hacer nada.
+- 🧩 Si Android cierra la app grabando, el widget se refresca al volver a abrirse y un toque sobre un «PARAR» que ya no graba no empieza otra grabación.
+- ▶ En el menú familiar, «Oír» se convierte en «⏹ Parar».
+- 🔠 El contador y los textos grandes de la pantalla roja no se desbordan con la letra del sistema al máximo; etiquetas y avisos para TalkBack.
+- Duración bien estimada de las grabaciones rescatadas en Opus.
+
+**Seguridad**
+- 🔒 Solo el widget de la app puede ordenar empezar o parar: entra por un `activity-alias` no exportado y la pantalla principal ignora esa orden por otras vías (antes cualquier app instalada podía parar una consulta).
+- 🔒 Grabaciones, token y ajustes excluidos de la copia en la nube **y** de la transferencia a un móvil nuevo (`dataExtractionRules`).
+- 🔒 El token se muestra con puntos (botón 👁 para verlo) y el teclado no aprende el nombre, el token ni el Chat ID.
+
+**Mantenimiento**
+- AndroidX actualizado: core-ktx 1.17.0, appcompat 1.7.1, WorkManager 2.10.0 (las versiones más recientes exigen el SDK 37). OkHttp sigue en 4.12.
+
+Riesgos aceptados: acceso a los ajustes con el móvil en la mano (sin PIN, por sencillez) y que Telegram no cifre de extremo a extremo los chats con bots (explicado en el README).
+
 ## 1.2.2 — 2026-11-20
 - ⏱️ Las grabaciones de una sola parte de menos de 10 s se descartan y no se envían (suelen ser toques por error). La pantalla lo avisa en gris: «Muy corta. No se ha enviado.». Las partes cortas de una consulta partida (por una llamada) sí se envían.
 

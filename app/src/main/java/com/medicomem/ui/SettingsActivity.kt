@@ -8,6 +8,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
 import android.provider.Settings
+import android.text.InputType
 import android.view.Gravity
 import android.widget.Button
 import android.widget.EditText
@@ -51,6 +52,7 @@ class SettingsActivity : AppCompatActivity() {
     private lateinit var batteryStatus: TextView
     private lateinit var list: LinearLayout
     private var player: MediaPlayer? = null
+    private var playingButton: Button? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -83,6 +85,7 @@ class SettingsActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.versionText).text =
             getString(R.string.version, BuildConfig.VERSION_NAME) + "\n" + deviceInfo()
 
+        findViewById<Button>(R.id.tokenToggle).setOnClickListener { toggleTokenVisibility() }
         findViewById<Button>(R.id.findChatButton).setOnClickListener { findChatId() }
         findViewById<Button>(R.id.testButton).setOnClickListener { testSend() }
         findViewById<Button>(R.id.batteryButton).setOnClickListener { openBatterySettings() }
@@ -100,9 +103,17 @@ class SettingsActivity : AppCompatActivity() {
 
     override fun onPause() {
         save()
-        player?.release()
-        player = null
+        stopPlayback()
         super.onPause()
+    }
+
+    private fun toggleTokenVisibility() {
+        val visible = token.inputType and InputType.TYPE_TEXT_VARIATION_PASSWORD == 0
+        val selection = token.selectionEnd
+        token.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS or
+            if (visible) InputType.TYPE_TEXT_VARIATION_PASSWORD else InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+        token.typeface = android.graphics.Typeface.MONOSPACE
+        token.setSelection(selection.coerceIn(0, token.length()))
     }
 
     private fun save() {
@@ -218,7 +229,7 @@ class SettingsActivity : AppCompatActivity() {
             LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
         row.addView(Button(this).apply {
             text = getString(R.string.play)
-            setOnClickListener { play(if (sent) store.sentAudio(meta.id) else store.pendingAudio(meta.id)) }
+            setOnClickListener { togglePlay(this, if (sent) store.sentAudio(meta.id) else store.pendingAudio(meta.id)) }
         })
         row.addView(Button(this).apply {
             text = getString(R.string.resend)
@@ -231,15 +242,30 @@ class SettingsActivity : AppCompatActivity() {
         list.addView(row)
     }
 
-    private fun play(file: java.io.File) {
-        player?.release()
+    /** ▶ Oír / ⏹ Parar: un toque empieza y otro para; al acabar el audio vuelve a ▶. */
+    private fun togglePlay(button: Button, file: java.io.File) {
+        val wasThis = playingButton === button
+        stopPlayback()
+        if (wasThis) return
         player = runCatching {
             MediaPlayer().apply {
                 setDataSource(file.absolutePath)
+                setOnCompletionListener { stopPlayback() }
                 prepare()
                 start()
             }
         }.getOrNull()
+        if (player != null) {
+            playingButton = button
+            button.text = getString(R.string.playing_stop)
+        }
+    }
+
+    private fun stopPlayback() {
+        player?.release()
+        player = null
+        playingButton?.text = getString(R.string.play)
+        playingButton = null
     }
 
     private fun label(text: String) = TextView(this).apply {

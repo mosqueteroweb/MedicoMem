@@ -28,7 +28,7 @@
         android:paddingVertical="10dp"
         android:text="@string/doctor_hint"
         android:textColor="@color/red"
-        android:textSize="22sp"
+        android:textSize="22dp"
         android:textStyle="bold"
         android:visibility="gone" />
 
@@ -37,9 +37,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
+        android:accessibilityLiveRegion="polite"
         android:text="@string/recording"
         android:textColor="#FFFFFF"
-        android:textSize="44sp"
+        android:textSize="44dp"
         android:textStyle="bold"
         android:visibility="gone" />
 
@@ -51,7 +52,8 @@
         android:gravity="center"
         android:paddingBottom="12dp"
         android:textColor="#FFFFFF"
-        android:textSize="64sp"
+        android:importantForAccessibility="no"
+        android:textSize="64dp"
         android:textStyle="bold"
         android:visibility="gone" />
 
@@ -81,6 +83,7 @@
         android:clickable="true"
         android:focusable="true"
         android:gravity="center"
+        android:accessibilityLiveRegion="polite"
         android:padding="16dp"
         android:text="@string/start"
         android:textColor="#FFFFFF"
